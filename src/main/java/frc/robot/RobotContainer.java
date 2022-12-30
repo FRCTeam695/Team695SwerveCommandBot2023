@@ -30,12 +30,21 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 public class RobotContainer 
 {
 
+  //F310 Variables:
   private static Joystick m_Logitech_F310 = new Joystick(0);
   private final JoystickButton A = new JoystickButton(m_Logitech_F310, 2);
   private final JoystickButton B = new JoystickButton(m_Logitech_F310, 3);
   private final DoubleSupplier m_F310_Left_XAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(0), 3));
   private final DoubleSupplier m_F310_Left_YAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(1), 3));
   private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(2));
+
+  //Xbox Variables:
+  private static Joystick m_Xbox = new Joystick(1);
+  private final JoystickButton A = new JoystickButton(m_Xbox, 1);
+  private final JoystickButton B = new JoystickButton(m_Xbox, 2);
+  private final DoubleSupplier m_Xbox_Left_XAxis = () -> (Math.pow(m_Xbox.getRawAxis(0), 3));
+  private final DoubleSupplier m_Xbox_Left_YAxis = () -> (Math.pow(m_Xbox.getRawAxis(1), 3));
+  private final DoubleSupplier m_Xbox_Right_XAxis = () -> (m_Xbox.getRawAxis(4));
 
   SendableChooser<Double> m_angleChooser = new SendableChooser<>();
   
@@ -45,6 +54,7 @@ public class RobotContainer
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
   private final Command m_F310_swerveCommand = swerveDriveCommand(m_F310_Left_XAxis, m_F310_Left_YAxis, m_F310_Right_XAxis, m_swerveDrivetrain);
+  private final Command m_Xbox_swerveCommand = swerveDriveCommand(m_Xbox_Left_XAxis, m_Xbox_Left_YAxis, m_Xbox_Right_XAxis, m_swerveDrivetrain);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() 
