@@ -32,16 +32,16 @@ public class RobotContainer
 
   //F310 Variables:
   private static Joystick m_Logitech_F310 = new Joystick(0);
-  private final JoystickButton A = new JoystickButton(m_Logitech_F310, 2);
-  private final JoystickButton B = new JoystickButton(m_Logitech_F310, 3);
+  private final JoystickButton m_F310_A = new JoystickButton(m_Logitech_F310, 2);
+  private final JoystickButton m_F310_B = new JoystickButton(m_Logitech_F310, 3);
   private final DoubleSupplier m_F310_Left_XAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(0), 3));
   private final DoubleSupplier m_F310_Left_YAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(1), 3));
   private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(2));
 
   //Xbox Variables:
   private static Joystick m_Xbox = new Joystick(1);
-  private final JoystickButton A = new JoystickButton(m_Xbox, 1);
-  private final JoystickButton B = new JoystickButton(m_Xbox, 2);
+  private final JoystickButton m_Xbox_A = new JoystickButton(m_Xbox, 1);
+  private final JoystickButton m_Xbox_B = new JoystickButton(m_Xbox, 2);
   private final DoubleSupplier m_Xbox_Left_XAxis = () -> (Math.pow(m_Xbox.getRawAxis(0), 3));
   private final DoubleSupplier m_Xbox_Left_YAxis = () -> (Math.pow(m_Xbox.getRawAxis(1), 3));
   private final DoubleSupplier m_Xbox_Right_XAxis = () -> (m_Xbox.getRawAxis(4));
@@ -63,8 +63,8 @@ public class RobotContainer
     m_swerveDrivetrain.setDefaultCommand(m_F310_swerveCommand);
     configureButtonBindings();
 
-    A.whenPressed(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
-    B.whenPressed(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
+    m_F310_A.whenPressed(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
+    m_F310_B.whenPressed(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
 
     m_angleChooser.setDefaultOption("No tarmac offset", 0.0);
