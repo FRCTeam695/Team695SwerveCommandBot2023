@@ -196,7 +196,14 @@ public class SwerveDriveCommand extends CommandBase
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) 
+  {
+    for(int lp=0; lp<4; lp++)
+      {
+        drivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+        drivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+      }
+  }
 
   // Returns true when the command should end.
   @Override
