@@ -27,8 +27,8 @@ public class SwerveDriveCommand extends CommandBase
   public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser) 
   {
     this.XjSupplier = XjSupplier;
-    this.YjSupplier = XjSupplier;
-    this.ZjSupplier = XjSupplier;
+    this.YjSupplier = YjSupplier;
+    this.ZjSupplier = ZjSupplier;
     this.drivetrain = drivetrain;
     this.m_angleChooser = angleChooser;
     // Use addRequirements() here to declare subsystem dependencies.
