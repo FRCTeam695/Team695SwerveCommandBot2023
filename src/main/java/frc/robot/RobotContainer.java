@@ -63,8 +63,8 @@ public class RobotContainer
     m_swerveDrivetrain.setDefaultCommand(m_F310_swerveCommand);
     configureButtonBindings();
 
-    m_F310_A.whenPressed(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
-    m_F310_B.whenPressed(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
+    m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
+    m_F310_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
 
     m_angleChooser.setDefaultOption("No tarmac offset", 0.0);
