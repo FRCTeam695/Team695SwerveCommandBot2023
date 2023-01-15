@@ -34,6 +34,7 @@ public class RobotContainer
   private static Joystick m_Logitech_F310 = new Joystick(0);
   private final JoystickButton m_F310_A = new JoystickButton(m_Logitech_F310, 2);
   private final JoystickButton m_F310_B = new JoystickButton(m_Logitech_F310, 3);
+  private final JoystickButton m_F310_X = new JoystickButton(m_Logitech_F310, 0);
   private final DoubleSupplier m_F310_Left_XAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(0), 3));
   private final DoubleSupplier m_F310_Left_YAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(1), 3));
   private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(2));
@@ -50,6 +51,7 @@ public class RobotContainer
   
   // Subsystems:
   private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem();
+  private final VictorSPXSubsystem m_VictorSPXSubsystem = new VictorSPXSubsystem();
 
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
@@ -66,6 +68,7 @@ public class RobotContainer
     m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
     m_F310_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
+    m_F310_X.onTrue(new RunVictor(m_VictorSPXSubsystem, 0.5));
 
     m_angleChooser.setDefaultOption("No tarmac offset", 0.0);
     m_angleChooser.addOption("Left tarmac offset", 21.0);
