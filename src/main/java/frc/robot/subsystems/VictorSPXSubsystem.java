@@ -5,18 +5,21 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 public class VictorSPXSubsystem extends SubsystemBase 
 {
   /** Creates a new VictorSPX. */
-  private final WPI_VictorSPX m_IntakeMotor = new WPI_VictorSPX(7);    
+  private final WPI_VictorSPX m_Victor = new WPI_VictorSPX(7);    
 
   public VictorSPXSubsystem() {}
 
   public void setVictorSpeed(double speed) 
   {
-    m_IntakeMotor.set(speed);
+    m_Victor.setNeutralMode(NeutralMode.Brake);
+    m_Victor.set(speed);
   }
 
   @Override
