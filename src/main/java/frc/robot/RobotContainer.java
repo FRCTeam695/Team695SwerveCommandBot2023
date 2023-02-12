@@ -115,6 +115,7 @@ public class RobotContainer
     m_F310_Copilot_RightBumper.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 3));
     m_F310_Copilot_Y.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, -1));
 
+    m_F310_Copilot_X.whileTrue(new ManualElevatorCommand(m_ElevatorSubsystem, m_F310_Copilot_Left_YAxis));
 
     Command scoreCones = scoreCones();
     SmartDashboard.putData((Sendable) scoreCones);
