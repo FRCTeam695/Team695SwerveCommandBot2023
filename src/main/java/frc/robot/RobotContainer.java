@@ -49,8 +49,22 @@ public class RobotContainer
   private final DoubleSupplier m_F310_Left_YAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(1), 3));
   private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(4));
 
+  //F310_Copilot Variables
+  private static Joystick m_Logitech_F310_Copilot = new Joystick(1);
+  private final JoystickButton m_F310_Copilot_A = new JoystickButton(m_Logitech_F310_Copilot, 1);
+  private final JoystickButton m_F310_Copilot_B = new JoystickButton(m_Logitech_F310_Copilot, 2);
+  private final JoystickButton m_F310_Copilot_X = new JoystickButton(m_Logitech_F310_Copilot, 3);
+  private final JoystickButton m_F310_Copilot_Y = new JoystickButton(m_Logitech_F310_Copilot, 4);
+  private final JoystickButton m_F310_Copilot_LeftBumper = new JoystickButton(m_Logitech_F310_Copilot, 5);
+  private final JoystickButton m_F310_Copilot_RightBumper = new JoystickButton(m_Logitech_F310_Copilot, 6);
+  private final JoystickButton m_F310_Copilot_BACK = new JoystickButton(m_Logitech_F310_Copilot, 7);
+  private final JoystickButton m_F310_Copilot_START = new JoystickButton(m_Logitech_F310_Copilot, 8);
+  private final DoubleSupplier m_F310_Copilot_Left_XAxis = () -> (Math.pow(m_Logitech_F310_Copilot.getRawAxis(0), 3));
+  private final DoubleSupplier m_F310_Copilot_Left_YAxis = () -> (Math.pow(m_Logitech_F310_Copilot.getRawAxis(1), 3));
+  private final DoubleSupplier m_F310_Copilot_Right_XAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(4));
+
   //Xbox Variables:
-  private static Joystick m_Xbox = new Joystick(1);
+  private static Joystick m_Xbox = new Joystick(2);
   private final JoystickButton m_Xbox_A = new JoystickButton(m_Xbox, 1);
   private final JoystickButton m_Xbox_B = new JoystickButton(m_Xbox, 2);
   private final DoubleSupplier m_Xbox_Left_XAxis = () -> (Math.pow(m_Xbox.getRawAxis(0), 3));
@@ -68,8 +82,6 @@ public class RobotContainer
   private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem = new ElevatorIntakeSubsystem();
   private final FlapManipulatorSubsystem m_FlapManipulatorSubsystem = new FlapManipulatorSubsystem();
   private final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
-  private final VictorSPXSubsystem m_VictorSPXSubsystem = new VictorSPXSubsystem();
-  
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
   private final Command m_F310_swerveCommand = new SwerveDriveCommand(m_F310_Left_XAxis, m_F310_Left_YAxis, m_F310_Right_XAxis, m_swerveDrivetrain, m_angleChooser);
@@ -79,13 +91,25 @@ public class RobotContainer
   public Command scoreCones()
   {
     return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
-    .andThen(new WaitCommand(1))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 3000, 0.08, 0))    //10000
-    .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 60000, 0.25, 0))    //84000
-    .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 8000, 0.08, 0))
-    .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5));
+    .andThen(new WaitCommand(1.5))
+    .andThen(new DriveStraightCommand(m_swerveDrivetrain, m_angleChooser, -0.075).withTimeout(1.0))
+    .andThen(new WaitCommand(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 3000, -0.08, 0))    //10000
+    .andThen(new WaitCommand(1.5))
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 57500, -0.15, 0))    //84000
+    .andThen(new WaitCommand(1.5))
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 8000, -0.08, 0))
+    .andThen(new WaitCommand(1.5));
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5));
+  }
+
+  public Command strafeTest()
+  {
+    return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
+    .andThen(new WaitCommand(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 300000, -0.15, 0));
   }
 
   public RobotContainer() 
@@ -100,20 +124,27 @@ public class RobotContainer
     m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
     m_F310_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
-    //m_F310_LeftBumper.whileTrue(new RunVictorCommand(m_VictorSPXSubsystem, 1));   // Release
-    //m_F310_RightBumper.whileTrue(new RunVictorCommand(m_VictorSPXSubsystem, -1));   // Intake
-
+    
     m_F310_LeftBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -0.7));
     m_F310_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7));
 
     m_F310_Y.whileTrue(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, true));
     m_F310_Y.whileFalse(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, false));
 
-    m_F310_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem));
+    
+    m_F310_Copilot_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 0));
+    m_F310_Copilot_START.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 1));
+    m_F310_Copilot_LeftBumper.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 2));
+    m_F310_Copilot_RightBumper.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 3));
+    m_F310_Copilot_Y.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, -1));
+
+    m_F310_Copilot_X.whileTrue(new ManualElevatorCommand(m_ElevatorSubsystem, m_F310_Copilot_Left_YAxis));
 
     Command scoreCones = scoreCones();
     SmartDashboard.putData((Sendable) scoreCones);
-    //m_F310_X.whileTrue(scoreCones);
+    m_F310_X.whileTrue(scoreCones);
+
+    //m_F310_Y.whileTrue(strafeTest());
 
     m_angleChooser.setDefaultOption("No tarmac offset", 0.0);
     m_angleChooser.addOption("Left tarmac offset", 21.0);

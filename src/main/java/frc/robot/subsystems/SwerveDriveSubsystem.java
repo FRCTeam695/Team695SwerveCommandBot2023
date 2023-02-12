@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,6 +25,9 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Navx2 gyro
   public static AHRS gyro = new AHRS(SPI.Port.kMXP);
 
+  // Digital Input to determine robot
+  public DigitalInput robotDigitalInput = new DigitalInput(9);
+
   public double gyroYaw;
 
   // Cancoders
@@ -36,7 +40,9 @@ public class SwerveDriveSubsystem extends SubsystemBase
   };
 
   // Cancoder mounting orientation offsets (degrees)
-  static double[] cancoderoffset = { 170, 228, 170, 204 };
+  // static double[] cancoderoffset = { 170, 228, 170, 204 };
+  //static double[] cancoderoffset = { 157, 224, 135, 174 };
+  static double[] cancoderoffset = new double[4];
 
   // Steering motors
   public static TalonFX steer[] = 
@@ -57,7 +63,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
   };
   
   // Default drive rotation directions (corner 1 is negated due to the camcoder mounting orientation)
-  public static double[] defaultrotation = { -1, 1, 1, 1 };
+  // public static double[] defaultrotation = { -1, 1, 1, 1 };
+  //public static double[] defaultrotation = { -1, -1, -1, -1 };
+  public static double[] defaultrotation = new double[4];
+
 
   // Cancoder pid controllers
   public static PIDController cancoderpid[] =
@@ -144,6 +153,31 @@ public class SwerveDriveSubsystem extends SubsystemBase
     }
     gyro.reset();
     SmartDashboard.putData(this);
+
+    if(robotDigitalInput.get())
+    {
+      cancoderoffset[0] = 157;
+      cancoderoffset[1] = 224;
+      cancoderoffset[2] = 135;
+      cancoderoffset[3] = 174;
+
+      defaultrotation[0] = -1;
+      defaultrotation[1] = -1;
+      defaultrotation[2] = -1;
+      defaultrotation[3] = -1;
+    }
+    else
+    {
+      cancoderoffset[0] = 170;
+      cancoderoffset[1] = 228;
+      cancoderoffset[2] = 170;
+      cancoderoffset[3] = 204;
+
+      defaultrotation[0] = -1;
+      defaultrotation[1] = 1;
+      defaultrotation[2] = 1;
+      defaultrotation[3] = 1;
+    }
   }
 
   @Override

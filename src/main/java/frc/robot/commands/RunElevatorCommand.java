@@ -4,6 +4,8 @@
 
 package frc.robot.commands;
 
+import java.text.spi.BreakIteratorProvider;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -12,17 +14,12 @@ public class RunElevatorCommand extends CommandBase
 {
   private final ElevatorSubsystem m_ElevatorSubsystem;
 
-  /*
-  double maxSpeed;
-  double maxTicks;
-
-  double initSpeed = 0.02;
-  double downSpeed;
-  */
+  int newLevel;
   
-  public RunElevatorCommand(ElevatorSubsystem elevatorSubsystem) 
+  public RunElevatorCommand(ElevatorSubsystem elevatorSubsystem, int newLevel) 
   {
     this.m_ElevatorSubsystem = elevatorSubsystem;
+    this.newLevel = newLevel;
     addRequirements(m_ElevatorSubsystem);
   }
 
@@ -36,6 +33,9 @@ public class RunElevatorCommand extends CommandBase
   @Override
   public void execute() 
   {
+    m_ElevatorSubsystem.runToLevel(newLevel);
+  
+    return;
 
     /*
     double stageTwo = maxTicks * 0.66;
@@ -43,15 +43,69 @@ public class RunElevatorCommand extends CommandBase
     double adjDownSpeed;
     boolean finished = false;
     */
+    
+    /*
+    double targetEncoderValue = 0;
+    double direction = 1.0;
+    double pos = m_ElevatorSubsystem.getPosition();
 
-    double maxTime = 3.0;                     // maximum seconds to allow command to run
-    double rotations = 100;                   // number of rotations to run
-    double minSpeed = 0.1;                    // start speed
-    double maxSpeed = 1.0;                    // plateau speed
-    double maxTicks = 2048 * rotations;       // total tick count for target rotations (falcon 500)
-    double plateauStart = 0.2 * maxTicks;     // threshold tick count when ramp up is complete
-    double plateauEnd = 0.8 * maxTicks;       // threshold tick count to begin ramp down
-    double tickstart, ticks;
+    if (pos >= 96000)
+    {
+      switch(level)
+      {
+        case "top":
+          break;
+        case "middle":
+          targetEncoderValue = 49000;
+          direction = -1.0;
+          break;
+        case "bottom":
+          targetEncoderValue = 0;
+          direction = -1.0;
+          break;
+      }
+    }
+    else if (pos >= 49000 && pos < 96000)
+    {
+      switch(level)
+      {
+        case "top":
+          targetEncoderValue = 96000;
+          direction = 1.0;
+          break;
+        case "middle":
+          break;
+        case "bottom":
+          targetEncoderValue = 0;
+          direction = -1.0;
+          break;
+      }
+    }
+    else
+    {
+      switch(level)
+      {
+        case "top":
+          targetEncoderValue = 96000;
+          direction = 1.0;
+          break;
+        case "middle":
+          targetEncoderValue = 49000;
+          direction = 1.0;
+          break;
+        case "bottom":
+          break;
+      }
+    }
+
+    double maxTime = 7.0;                     // maximum seconds to allow command to run
+    //double rotations = relativeRotations;                   // number of rotations to run
+    double minSpeed = 0.1 * direction;                    // start speed
+    double maxSpeed = 1 * direction;                    // plateau speed
+    //double maxTicks = targetEncoderValue;       // total tick count for target rotations (falcon 500)
+    double moveTicks = Math.abs(pos) - targetEncoderValue;
+    double plateauStart = pos + 0.2*direction*moveTicks;     // threshold tick count when ramp up is complete
+    double plateauEnd = pos + 0.8*direction*moveTicks;       // threshold tick count to begin ramp down
     double targetSpeed;
 
     // create a timer to enforce maxTime
@@ -59,42 +113,61 @@ public class RunElevatorCommand extends CommandBase
     et.reset();
     et.start();
 
-    // get start encoder ticks (saves time by not resetting encoders)
-    tickstart = m_ElevatorSubsystem.getPosition();
-
     // loop to run until maxTime
     while(et.get() < maxTime)
     {
-
-      // get current ticks from start ticks
-      ticks = m_ElevatorSubsystem.getPosition() - tickstart;
-
-      // if at tick target, exit loop
-      if (ticks >= maxTicks)
+      pos = m_ElevatorSubsystem.getPosition();
+      if(direction == 1.0)
       {
-        break;
-      }
+        if(pos >= targetEncoderValue)
+        {
+          break;
+        }
+        // before plateau speed ramp up
+        if (pos < plateauStart)
+        {
+          targetSpeed = maxSpeed * pos / plateauStart;
+        }
 
-      // before plateau speed ramp up
-      if (ticks < plateauStart)
-      {
-        targetSpeed = maxSpeed * ticks / plateauStart;
-      }
+        // at plateau speed constant at max
+        else if (pos < plateauEnd)
+        {
+          targetSpeed = maxSpeed;
+        }
 
-      // at plateau speed constant at max
-      else if (ticks < plateauEnd)
-      {
-        targetSpeed = maxSpeed;
+        // after plateau speed ramp down
+        else
+        {
+          targetSpeed = maxSpeed  - maxSpeed * (pos - plateauEnd) / (targetEncoderValue - plateauEnd);
+        }
       }
-
-      // after plateau speed ramp down
       else
       {
-        targetSpeed = maxSpeed  - maxSpeed * (ticks - plateauEnd) / (maxTicks - plateauEnd);
-      }
+        if(pos <= targetEncoderValue)
+        {
+          break;
+        }
+        // before plateau speed ramp up
+        if (pos > plateauStart)
+        {
+          targetSpeed = maxSpeed * pos / plateauStart;
+        }
+
+        // at plateau speed constant at max
+        else if (pos > plateauEnd)
+        {
+          targetSpeed = maxSpeed;
+        }
+
+        // after plateau speed ramp down
+        else
+        {
+          targetSpeed = maxSpeed  - maxSpeed * (pos - plateauEnd) / (targetEncoderValue - plateauEnd);
+        }
+      }      
 
       // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
-      if (targetSpeed < minSpeed)
+      if (Math.abs(targetSpeed) < Math.abs(minSpeed))
       {
         targetSpeed = minSpeed;
       }
@@ -147,6 +220,172 @@ public class RunElevatorCommand extends CommandBase
     */
 
   }
+
+
+
+
+
+  /*
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() 
+  {
+
+//    double stageTwo = maxTicks * 0.66;
+//    double adjUpSpeed;
+//    double adjDownSpeed;
+//    boolean finished = false;
+    
+    double targetEncoderValue = 0;
+    double direction = 1.0;
+    double pos = m_ElevatorSubsystem.getPosition();
+
+    if (pos >= 96000)
+    {
+      switch(level)
+      {
+        case "top":
+          break;
+        case "middle":
+          targetEncoderValue = 49000;
+          direction = -1.0;
+          break;
+        case "bottom":
+          targetEncoderValue = 0;
+          direction = -1.0;
+          break;
+      }
+    }
+    else if (pos >= 49000 && pos < 96000)
+    {
+      switch(level)
+      {
+        case "top":
+          targetEncoderValue = 96000;
+          direction = 1.0;
+          break;
+        case "middle":
+          break;
+        case "bottom":
+          targetEncoderValue = 0;
+          direction = -1.0;
+          break;
+      }
+    }
+    else
+    {
+      switch(level)
+      {
+        case "top":
+          targetEncoderValue = 96000;
+          direction = 1.0;
+          break;
+        case "middle":
+          targetEncoderValue = 49000;
+          direction = 1.0;
+          break;
+        case "bottom":
+          break;
+      }
+    }
+
+    double maxTime = 7.0;                     // maximum seconds to allow command to run
+    //double rotations = relativeRotations;                   // number of rotations to run
+    double minSpeed = 0.1 * direction;                    // start speed
+    double maxSpeed = 1 * direction;                    // plateau speed
+    //double maxTicks = targetEncoderValue;       // total tick count for target rotations (falcon 500)
+    double moveTicks = Math.abs(pos) - targetEncoderValue;
+    double plateauStart = pos + 0.2*direction*moveTicks;     // threshold tick count when ramp up is complete
+    double plateauEnd = pos + 0.8*direction*moveTicks;       // threshold tick count to begin ramp down
+    double targetSpeed;
+
+    // create a timer to enforce maxTime
+    Timer et = new Timer();
+    et.reset();
+    et.start();
+
+    // loop to run until maxTime
+    while(et.get() < maxTime)
+    {
+      pos = m_ElevatorSubsystem.getPosition();
+      if(direction == 1.0)
+      {
+        if(pos >= targetEncoderValue)
+        {
+          break;
+        }
+        // before plateau speed ramp up
+        if (pos < plateauStart)
+        {
+          targetSpeed = maxSpeed * pos / plateauStart;
+        }
+
+        // at plateau speed constant at max
+        else if (pos < plateauEnd)
+        {
+          targetSpeed = maxSpeed;
+        }
+
+        // after plateau speed ramp down
+        else
+        {
+          targetSpeed = maxSpeed  - maxSpeed * (pos - plateauEnd) / (targetEncoderValue - plateauEnd);
+        }
+      }
+      else
+      {
+        if(pos <= targetEncoderValue)
+        {
+          break;
+        }
+        // before plateau speed ramp up
+        if (pos > plateauStart)
+        {
+          targetSpeed = maxSpeed * pos / plateauStart;
+        }
+
+        // at plateau speed constant at max
+        else if (pos > plateauEnd)
+        {
+          targetSpeed = maxSpeed;
+        }
+
+        // after plateau speed ramp down
+        else
+        {
+          targetSpeed = maxSpeed  - maxSpeed * (pos - plateauEnd) / (targetEncoderValue - plateauEnd);
+        }
+      }      
+
+      // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
+      if (Math.abs(targetSpeed) < Math.abs(minSpeed))
+      {
+        targetSpeed = minSpeed;
+      }
+
+      // send target speed to motor
+      m_ElevatorSubsystem.setSpeed(targetSpeed);
+
+      // delay 5 msec to not saturate CAN
+      Timer.delay(0.005);
+    }
+
+    // stop motor and timer
+    m_ElevatorSubsystem.setSpeed(0.0);
+    et.stop();
+
+
+  }
+*/
+
+
+
+
+
+
+
+
+
 
   // Called once the command ends or is interrupted.
   @Override

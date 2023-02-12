@@ -9,7 +9,9 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.interfaces.Accelerometer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -48,7 +50,7 @@ public class StrafeToTargetCommand extends CommandBase
     drivetrain.drive[0].setSelectedSensorPosition(0);
   }
 
-  public void drive(double adjXj)
+  public void driveStrafe(double adjXj)
   {
     double gyroError = initialRobotYaw - drivetrain.gyroYaw;
 
@@ -193,7 +195,7 @@ public class StrafeToTargetCommand extends CommandBase
   @Override
   public void execute() 
   {
-      drive(strafeSpeed);
+      driveStrafe(strafeSpeed);
   }
 
   // Called once the command ends or is interrupted.

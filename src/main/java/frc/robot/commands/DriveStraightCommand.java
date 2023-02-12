@@ -4,49 +4,44 @@
 
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 
-public class SwerveDriveCommand extends CommandBase 
+public class DriveStraightCommand extends CommandBase 
 {
-
-  private final DoubleSupplier XjSupplier;
-  private final DoubleSupplier YjSupplier;
-  private final DoubleSupplier ZjSupplier;
   private final SwerveDriveSubsystem drivetrain;
   private final SendableChooser<Double> m_angleChooser;
+  private final double driveSpeed;
 
-  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser) 
+  double initialRobotYaw;
+
+  /** Creates a new DriveStraightCommand. */
+  public DriveStraightCommand(SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, double driveSpeed) 
   {
-    this.XjSupplier = XjSupplier;
-    this.YjSupplier = YjSupplier;
-    this.ZjSupplier = ZjSupplier;
     this.drivetrain = drivetrain;
     this.m_angleChooser = angleChooser;
+    this.driveSpeed = driveSpeed;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drivetrain);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
-
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() 
+  public void initialize() 
   {
-    // Scaled to 1/2 speed
-    double Xj = XjSupplier.getAsDouble() * 0.5;
-    double Yj = YjSupplier.getAsDouble() * 0.5;
-    double Zj = ZjSupplier.getAsDouble() * 0.5;
+    initialRobotYaw = drivetrain.gyroYaw;
+  }
+
+  public void driveStraight(double adjYj)
+  {
+    double gyroError = initialRobotYaw - drivetrain.gyroYaw;
+
+    double adjZj = gyroError * (0.05);
 
     // Min and max steering motor percent output
     double MinSteer = -1.0;
@@ -62,31 +57,25 @@ public class SwerveDriveCommand extends CommandBase
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
-    double deadband = 0.075;
-    double STR = Xj;
-    if (STR > -deadband && STR < deadband) STR = 0;
+    double deadband = 0.025;  // Originally 0.075
 
-    double FWD = -Yj;
+    double FWD = adjYj;
     if (FWD > -deadband && FWD < deadband) FWD = 0;
 
-    double RCW = Zj;
-    if (RCW > -deadband && RCW < deadband) RCW = 0;
+    double rotationDeadband = 0.0125;
+    double RCW = adjZj;
+    if (RCW > -rotationDeadband && RCW < rotationDeadband) RCW = 0;
 
-    // Limit rotate to 20% motor
     RCW /= 3;
 
-    /*
+    double STR;
+
     // adjust for field oriented drive
     double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
     //double gyro_rad = gyro.getYaw() / 180 * Math.PI;
-    double tFWD = FWD * Math.cos(gyro_rad) + STR * Math.sin(gyro_rad);
-    STR = -FWD * Math.sin(gyro_rad) + STR * Math.cos(gyro_rad);
+    double tFWD = FWD * Math.cos(gyro_rad);
+    STR = -FWD * Math.sin(gyro_rad);
     FWD = tFWD;
-    */
-
-    SmartDashboard.putNumber("STR", STR);
-    SmartDashboard.putNumber("FWD", FWD);
-    SmartDashboard.putNumber("RCW", RCW);
 
     // Compute temporary work variables
     double A = drivetrain.nearzero(STR + RCW * (L/R));
@@ -197,15 +186,21 @@ public class SwerveDriveCommand extends CommandBase
     }
   }
 
+  @Override
+  public void execute() 
+  {
+    driveStraight(driveSpeed);
+  }
+
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) 
   {
     for(int lp=0; lp<4; lp++)
-      {
-        drivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-        drivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-      }
+    {
+      drivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+      drivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+    }
   }
 
   // Returns true when the command should end.
