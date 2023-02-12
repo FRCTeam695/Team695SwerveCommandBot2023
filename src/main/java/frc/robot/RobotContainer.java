@@ -56,6 +56,7 @@ public class RobotContainer
   // Subsystems:
   private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem();
   private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem = new ElevatorIntakeSubsystem();
+  private final FlapManipulatorSubsystem m_FlapManipulatorSubsystem = new FlapManipulatorSubsystem();
 
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
@@ -91,6 +92,7 @@ public class RobotContainer
   {
     // Configure the button bindings
     m_swerveDrivetrain.setDefaultCommand(m_F310_swerveCommand);
+    m_FlapManipulatorSubsystem.setDefaultCommand(new RunCommand(()-> {m_FlapManipulatorSubsystem.setSpeed(0);}, m_FlapManipulatorSubsystem));   // TODO: Set to zero
     m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setNEOMotorSpeed(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
@@ -101,6 +103,10 @@ public class RobotContainer
     m_F310_LeftBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -0.7));
     m_F310_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7));
 
+    m_F310_Y.whileTrue(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, true));
+    m_F310_Y.whileFalse(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, false));
+
+    
 
     Command scoreCones = scoreCones();
     SmartDashboard.putData((Sendable) scoreCones);
