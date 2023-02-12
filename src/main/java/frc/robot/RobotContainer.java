@@ -55,7 +55,7 @@ public class RobotContainer
 
   // Subsystems:
   private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem();
-  private final VictorSPXSubsystem m_VictorSPXSubsystem = new VictorSPXSubsystem();
+  private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem = new ElevatorIntakeSubsystem();
 
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
@@ -91,10 +91,15 @@ public class RobotContainer
   {
     // Configure the button bindings
     m_swerveDrivetrain.setDefaultCommand(m_F310_swerveCommand);
+    m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setNEOMotorSpeed(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
     m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
     m_F310_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
+
+    
+    m_F310_LeftBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -0.7));
+    m_F310_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7));
 
 
     Command scoreCones = scoreCones();
