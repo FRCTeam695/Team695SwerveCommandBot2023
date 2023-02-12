@@ -17,7 +17,7 @@ public class ElevatorSubsystem extends SubsystemBase
   private final WPI_TalonFX m_ElevatorFalcon = new WPI_TalonFX(2);
   
   private double pos;
-  private double[] levelTicks = {0, 30000, 60000, 90000};
+  private double[] levelTicks = {0, 30000, 60000, 86000};
 
   public ElevatorSubsystem() 
   {
