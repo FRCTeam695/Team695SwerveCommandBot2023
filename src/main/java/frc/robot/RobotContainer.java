@@ -49,6 +49,10 @@ public class RobotContainer
 
   SendableChooser<Double> m_angleChooser = new SendableChooser<>();
   
+  // Limelight:
+  private final NetworkTableInstance RobotMainNetworkTableInstance = NetworkTableInstance.getDefault();
+  private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem(RobotMainNetworkTableInstance, 0);
+
   // Subsystems:
   private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem();
   private final VictorSPXSubsystem m_VictorSPXSubsystem = new VictorSPXSubsystem();
@@ -59,6 +63,30 @@ public class RobotContainer
   private final Command m_Xbox_swerveCommand = new SwerveDriveCommand(m_Xbox_Left_XAxis, m_Xbox_Left_YAxis, m_Xbox_Right_XAxis, m_swerveDrivetrain, m_angleChooser);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  public Command scoreCones()
+  {
+    return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
+    .andThen(new WaitCommand(1.5))
+    .andThen(new DriveStraightCommand(m_swerveDrivetrain, m_angleChooser, -0.075).withTimeout(1.0))
+    .andThen(new WaitCommand(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 3000, -0.08, 0))    //10000
+    .andThen(new WaitCommand(1.5))
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 57500, -0.15, 0))    //84000
+    .andThen(new WaitCommand(1.5))
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 8000, -0.08, 0))
+    .andThen(new WaitCommand(1.5));
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5));
+  }
+
+  public Command strafeTest()
+  {
+    return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
+    .andThen(new WaitCommand(1.5))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 300000, -0.15, 0));
+  }
+
   public RobotContainer() 
   {
     // Configure the button bindings
@@ -68,7 +96,12 @@ public class RobotContainer
     m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
     m_F310_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
-    m_F310_X.onTrue(new RunVictor(m_VictorSPXSubsystem, 0.5));
+
+    Command scoreCones = scoreCones();
+    SmartDashboard.putData((Sendable) scoreCones);
+    m_F310_X.whileTrue(scoreCones);
+
+    //m_F310_Y.whileTrue(strafeTest());
 
     m_angleChooser.setDefaultOption("No tarmac offset", 0.0);
     m_angleChooser.addOption("Left tarmac offset", 21.0);
