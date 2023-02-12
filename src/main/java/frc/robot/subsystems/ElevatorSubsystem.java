@@ -30,8 +30,8 @@ public class ElevatorSubsystem extends SubsystemBase
 
     SupplyCurrentLimitConfiguration falconlimit = new SupplyCurrentLimitConfiguration();
     falconlimit.enable = true;
-    falconlimit.currentLimit = 10;
-    falconlimit.triggerThresholdCurrent = 10;
+    falconlimit.currentLimit = 50;
+    falconlimit.triggerThresholdCurrent = 50;
     falconlimit.triggerThresholdTime = 0;
     m_ElevatorFalcon.setSelectedSensorPosition(0,0,100);
     getPosition();
@@ -66,8 +66,8 @@ public class ElevatorSubsystem extends SubsystemBase
   public void runToLevel(int newLevel)
   {
     double maxTime = 7.0;     // maximum seconds to allow run
-    double minSpeed = 0.1;    // start speed
-    double maxSpeed = 0.25;   // plateau speed
+    double minSpeed = 0.2;    // start speed
+    double maxSpeed = 0.4;   // plateau speed
     double plateauStart;      // threshold tick count when ramp up is complete
     double plateauEnd;        // threshold tick count to begin ramp down
     double targetSpeed;
