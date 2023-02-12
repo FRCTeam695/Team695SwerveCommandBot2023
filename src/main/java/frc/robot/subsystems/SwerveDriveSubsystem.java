@@ -17,7 +17,7 @@ import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
-import com.kauailabs.navx.frc.AHRS;
+import com.kauailabs.navx.frc.*;
 
 public class SwerveDriveSubsystem extends SubsystemBase 
 {
@@ -71,10 +71,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Talon encoder pid controllers (TODO:  move these directly into the falcon 500's)
   public static PIDController talonpid[] =
   {
-    new PIDController(0.01, 0, 0),
-    new PIDController(0.01, 0, 0),
-    new PIDController(0.01, 0, 0),
-    new PIDController(0.01, 0, 0)
+    new PIDController(0.01, 0.001, 0),
+    new PIDController(0.01, 0.001, 0),
+    new PIDController(0.01, 0.001, 0),
+    new PIDController(0.01, 0.001, 0)
   };
 
   public double nearzero(double val)
@@ -108,7 +108,9 @@ public class SwerveDriveSubsystem extends SubsystemBase
   public SwerveDriveSubsystem() 
   {
     gyro.calibrate();
-    gyro.reset();
+    while(gyro.isCalibrating())
+    {}
+    System.out.println("RUNNING SWERVE SUBSYSTEM CONSTRUCTOR");
 
     // current limit drive falcons
     SupplyCurrentLimitConfiguration falconlimit = new SupplyCurrentLimitConfiguration();
@@ -140,13 +142,15 @@ public class SwerveDriveSubsystem extends SubsystemBase
             drive[lp].config_kI(0, 0.001, 30);
             drive[lp].config_kD(0, 5, 30);    
     }
+    gyro.reset();
+    SmartDashboard.putData(this);
   }
 
   @Override
   public void periodic() 
   {
     gyroYaw = gyro.getYaw();
-    SmartDashboard.putNumber("Yaw", gyro.getYaw());
+    SmartDashboard.putNumber("Yaw", gyroYaw);
   }
 
   @Override
