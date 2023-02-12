@@ -43,9 +43,10 @@ public class SwerveDriveCommand extends CommandBase
   @Override
   public void execute() 
   {
-    double Xj = XjSupplier.getAsDouble();
-    double Yj = YjSupplier.getAsDouble();
-    double Zj = ZjSupplier.getAsDouble();
+    // Scaled to 1/2 speed
+    double Xj = XjSupplier.getAsDouble() * 0.5;
+    double Yj = YjSupplier.getAsDouble() * 0.5;
+    double Zj = ZjSupplier.getAsDouble() * 0.5;
 
     // Min and max steering motor percent output
     double MinSteer = -1.0;
