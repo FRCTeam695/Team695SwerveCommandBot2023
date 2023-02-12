@@ -9,8 +9,12 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,6 +23,7 @@ import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
@@ -32,15 +37,34 @@ public class RobotContainer
 
   //F310 Variables:
   private static Joystick m_Logitech_F310 = new Joystick(0);
-  private final JoystickButton m_F310_A = new JoystickButton(m_Logitech_F310, 2);
-  private final JoystickButton m_F310_B = new JoystickButton(m_Logitech_F310, 3);
-  private final JoystickButton m_F310_X = new JoystickButton(m_Logitech_F310, 0);
+  private final JoystickButton m_F310_A = new JoystickButton(m_Logitech_F310, 1);
+  private final JoystickButton m_F310_B = new JoystickButton(m_Logitech_F310, 2);
+  private final JoystickButton m_F310_X = new JoystickButton(m_Logitech_F310, 3);
+  private final JoystickButton m_F310_Y = new JoystickButton(m_Logitech_F310, 4);
+  private final JoystickButton m_F310_LeftBumper = new JoystickButton(m_Logitech_F310, 5);
+  private final JoystickButton m_F310_RightBumper = new JoystickButton(m_Logitech_F310, 6);
+  private final JoystickButton m_F310_BACK = new JoystickButton(m_Logitech_F310, 7);
+  private final JoystickButton m_F310_START = new JoystickButton(m_Logitech_F310, 8);
   private final DoubleSupplier m_F310_Left_XAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(0), 3));
   private final DoubleSupplier m_F310_Left_YAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(1), 3));
-  private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(2));
+  private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(4));
+
+  //F310_Copilot Variables
+  private static Joystick m_Logitech_F310_Copilot = new Joystick(1);
+  private final JoystickButton m_F310_Copilot_A = new JoystickButton(m_Logitech_F310_Copilot, 1);
+  private final JoystickButton m_F310_Copilot_B = new JoystickButton(m_Logitech_F310_Copilot, 2);
+  private final JoystickButton m_F310_Copilot_X = new JoystickButton(m_Logitech_F310_Copilot, 3);
+  private final JoystickButton m_F310_Copilot_Y = new JoystickButton(m_Logitech_F310_Copilot, 4);
+  private final JoystickButton m_F310_Copilot_LeftBumper = new JoystickButton(m_Logitech_F310_Copilot, 5);
+  private final JoystickButton m_F310_Copilot_RightBumper = new JoystickButton(m_Logitech_F310_Copilot, 6);
+  private final JoystickButton m_F310_Copilot_BACK = new JoystickButton(m_Logitech_F310_Copilot, 7);
+  private final JoystickButton m_F310_Copilot_START = new JoystickButton(m_Logitech_F310_Copilot, 8);
+  private final DoubleSupplier m_F310_Copilot_Left_XAxis = () -> (Math.pow(m_Logitech_F310_Copilot.getRawAxis(0), 3));
+  private final DoubleSupplier m_F310_Copilot_Left_YAxis = () -> (Math.pow(m_Logitech_F310_Copilot.getRawAxis(1), 3));
+  private final DoubleSupplier m_F310_Copilot_Right_XAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(4));
 
   //Xbox Variables:
-  private static Joystick m_Xbox = new Joystick(1);
+  private static Joystick m_Xbox = new Joystick(2);
   private final JoystickButton m_Xbox_A = new JoystickButton(m_Xbox, 1);
   private final JoystickButton m_Xbox_B = new JoystickButton(m_Xbox, 2);
   private final DoubleSupplier m_Xbox_Left_XAxis = () -> (Math.pow(m_Xbox.getRawAxis(0), 3));
