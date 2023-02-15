@@ -44,9 +44,14 @@ public class SwerveDriveCommand extends CommandBase
   public void execute() 
   {
     // Scaled to 1/2 speed
-    double Xj = XjSupplier.getAsDouble() * 0.5;
-    double Yj = YjSupplier.getAsDouble() * 0.5;
-    double Zj = ZjSupplier.getAsDouble() * 0.5;
+    double Xj = XjSupplier.getAsDouble() * 1;
+    double Yj = YjSupplier.getAsDouble() * 1;
+    double Zj = ZjSupplier.getAsDouble() * 1;
+
+
+    Xj = Xj * Xj * Xj;
+    Yj = Yj * Yj * Yj;
+    Zj = Zj * Zj * Zj;
 
     // Min and max steering motor percent output
     double MinSteer = -1.0;
@@ -57,8 +62,8 @@ public class SwerveDriveCommand extends CommandBase
     double co;
 
     // Chassis dimensions
-    double L = 25;
-    double W = 25;
+    double L = 27;
+    double W = 30;
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
@@ -73,16 +78,15 @@ public class SwerveDriveCommand extends CommandBase
     if (RCW > -deadband && RCW < deadband) RCW = 0;
 
     // Limit rotate to 20% motor
-    RCW /= 3;
+    //RCW /= 3;
 
-    /*
+    
     // adjust for field oriented drive
-    double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
-    //double gyro_rad = gyro.getYaw() / 180 * Math.PI;
+    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
+    double gyro_rad = drivetrain.gyroYaw / 180 * Math.PI;
     double tFWD = FWD * Math.cos(gyro_rad) + STR * Math.sin(gyro_rad);
     STR = -FWD * Math.sin(gyro_rad) + STR * Math.cos(gyro_rad);
     FWD = tFWD;
-    */
 
     SmartDashboard.putNumber("STR", STR);
     SmartDashboard.putNumber("FWD", FWD);

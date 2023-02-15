@@ -40,9 +40,9 @@ public class SwerveDriveSubsystem extends SubsystemBase
   };
 
   // Cancoder mounting orientation offsets (degrees)
-  // static double[] cancoderoffset = { 170, 228, 170, 204 };
-  //static double[] cancoderoffset = { 157, 224, 135, 174 };
-  static double[] cancoderoffset = new double[4];
+ //static double[] cancoderoffset = { 170, 228, 170, 204 };
+  static double[] cancoderoffset = { 157, 224, 135, 154 };
+  //static double[] cancoderoffset = new double[4];
 
   // Steering motors
   public static TalonFX steer[] = 
@@ -64,8 +64,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
   
   // Default drive rotation directions (corner 1 is negated due to the camcoder mounting orientation)
   // public static double[] defaultrotation = { -1, 1, 1, 1 };
-  //public static double[] defaultrotation = { -1, -1, -1, -1 };
-  public static double[] defaultrotation = new double[4];
+  public static double[] defaultrotation = { -1, -1, -1, -1 };
+  //public static double[] defaultrotation = new double[4];
 
 
   // Cancoder pid controllers
@@ -154,6 +154,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
     gyro.reset();
     SmartDashboard.putData(this);
 
+    /*
     if(robotDigitalInput.get())
     {
       cancoderoffset[0] = 157;
@@ -178,6 +179,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
       defaultrotation[2] = 1;
       defaultrotation[3] = 1;
     }
+    */
   }
 
   @Override
