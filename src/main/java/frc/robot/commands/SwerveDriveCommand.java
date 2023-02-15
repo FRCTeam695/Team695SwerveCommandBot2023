@@ -75,14 +75,13 @@ public class SwerveDriveCommand extends CommandBase
     // Limit rotate to 20% motor
     RCW /= 3;
 
-    /*
+
     // adjust for field oriented drive
-    double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
-    //double gyro_rad = gyro.getYaw() / 180 * Math.PI;
+    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
+    double gyro_rad = drivetrain.gyroYaw / 180 * Math.PI;
     double tFWD = FWD * Math.cos(gyro_rad) + STR * Math.sin(gyro_rad);
     STR = -FWD * Math.sin(gyro_rad) + STR * Math.cos(gyro_rad);
     FWD = tFWD;
-    */
 
     SmartDashboard.putNumber("STR", STR);
     SmartDashboard.putNumber("FWD", FWD);
