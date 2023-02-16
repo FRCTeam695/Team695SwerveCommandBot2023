@@ -57,8 +57,8 @@ public class SwerveDriveCommand extends CommandBase
     double co;
 
     // Chassis dimensions
-    double L = 25;
-    double W = 25;
+    double L = 27;
+    double W = 30;
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
