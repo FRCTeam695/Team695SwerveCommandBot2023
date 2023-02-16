@@ -252,6 +252,10 @@ public class ElevatorSubsystem extends SubsystemBase
     if (HoldPos == true)
     {
       double co = MathUtil.clamp(HoldPID.calculate(getPosition(), TargetPos), -0.08, 0.08);
+      if(pos < 500)
+      {
+        co = 0;
+      }
       SmartDashboard.putNumber("CO", co);
       m_ElevatorFalcon.set(co);
     }
