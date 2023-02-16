@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class FlapManipulatorSubsystem extends SubsystemBase 
 {
-  private CANSparkMax m_flap = new CANSparkMax(51, MotorType.kBrushless);
+  private CANSparkMax m_flap = new CANSparkMax(52, MotorType.kBrushless);
   private RelativeEncoder m_encoder = m_flap.getEncoder();
 
   public FlapManipulatorSubsystem() 
