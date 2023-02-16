@@ -25,7 +25,7 @@ public class ElevatorSubsystem extends SubsystemBase
   private double pos;
 
   // TODO:  set these level tick counts based on grid scoring posotions:
-  private double[] levelTicks = {0, 30000, 60000, 87000};
+  private double[] levelTicks = {0, 10000, 60000, 87000};
 
   public ElevatorSubsystem() 
   {
