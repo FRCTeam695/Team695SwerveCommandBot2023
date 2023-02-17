@@ -116,9 +116,7 @@ public class RobotContainer
   {
     // Configure the button bindings
     m_swerveDrivetrain.setDefaultCommand(m_F310_swerveCommand);
-    m_FlapManipulatorSubsystem.setDefaultCommand(new RunCommand(()-> {m_FlapManipulatorSubsystem.setSpeed(0);}, m_FlapManipulatorSubsystem));   // TODO: Set to zero
     m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setNEOMotorSpeed(0);}, m_ElevatorIntakeSubsystem));
-// JPK:  WHY???    m_ElevatorSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorSubsystem.setSpeed(0);}, m_ElevatorSubsystem));
     configureButtonBindings();
 
     m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
