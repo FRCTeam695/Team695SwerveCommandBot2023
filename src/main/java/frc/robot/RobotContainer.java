@@ -50,6 +50,7 @@ public class RobotContainer
   private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(4));
 
   //F310_Copilot Variables
+  /*
   private static Joystick m_Logitech_F310_Copilot = new Joystick(1);
   private final JoystickButton m_F310_Copilot_A = new JoystickButton(m_Logitech_F310_Copilot, 1);
   private final JoystickButton m_F310_Copilot_B = new JoystickButton(m_Logitech_F310_Copilot, 2);
@@ -62,6 +63,7 @@ public class RobotContainer
   private final DoubleSupplier m_F310_Copilot_Left_XAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(0));
   private final DoubleSupplier m_F310_Copilot_Left_YAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(1));
   private final DoubleSupplier m_F310_Copilot_Right_XAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(4));
+  */
 
   //Xbox Variables:
   private static Joystick m_Xbox = new Joystick(2);
