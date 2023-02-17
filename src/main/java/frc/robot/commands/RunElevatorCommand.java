@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.text.spi.BreakIteratorProvider;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -16,10 +17,9 @@ public class RunElevatorCommand extends CommandBase
 
   int newLevel;
   
-  public RunElevatorCommand(ElevatorSubsystem elevatorSubsystem, int newLevel) 
+  public RunElevatorCommand(ElevatorSubsystem elevatorSubsystem) 
   {
     this.m_ElevatorSubsystem = elevatorSubsystem;
-    this.newLevel = newLevel;
     addRequirements(m_ElevatorSubsystem);
   }
 
@@ -33,7 +33,9 @@ public class RunElevatorCommand extends CommandBase
   @Override
   public void execute() 
   {
-    m_ElevatorSubsystem.runToLevel(newLevel);
+    long currentLevel = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentLevel").getInteger(-1);
+
+    m_ElevatorSubsystem.runToLevel((int)currentLevel);
   
     return;
 
