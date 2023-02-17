@@ -34,7 +34,7 @@ public class RunFlapManipulatorCommand extends CommandBase
   {
     if (deploy == true)
     {
-      if (m_FlapManipulatorSubsystem.getPosition() < 10)
+      if (m_FlapManipulatorSubsystem.getPosition() < 6)
       {
         m_FlapManipulatorSubsystem.setSpeed(0.2);
       }
@@ -45,13 +45,13 @@ public class RunFlapManipulatorCommand extends CommandBase
     }
     else
     {
-      if (m_FlapManipulatorSubsystem.getPosition() > 3)
+      if (m_FlapManipulatorSubsystem.getPosition() > 0)
       {
         m_FlapManipulatorSubsystem.setSpeed(-0.1);
       }
       else
       {
-        m_FlapManipulatorSubsystem.setSpeed(0);
+        m_FlapManipulatorSubsystem.setSpeed(-0.05);
       }
     }
   }
