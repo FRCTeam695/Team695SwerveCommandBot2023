@@ -138,6 +138,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
       drive[lp].setNeutralMode(NeutralMode.Brake);
       drive[lp].configSupplyCurrentLimit(falconlimit);
 
+      /*
       // per ctre velocity control example
       drive[lp].configNeutralDeadband(0.001);
       drive[lp].configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, 30);
@@ -150,6 +151,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
             drive[lp].config_kP(0, 0.1, 30);
             drive[lp].config_kI(0, 0.001, 30);
             drive[lp].config_kD(0, 5, 30);    
+      */
+
     }
     gyro.reset();
     SmartDashboard.putData(this);
