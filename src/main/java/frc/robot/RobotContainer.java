@@ -131,7 +131,7 @@ public class RobotContainer
     m_F310_Y.whileTrue(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, true,  m_ElevatorSubsystem));
     m_F310_Y.whileFalse(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, false, m_ElevatorSubsystem));
 
-    m_F310_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem));
+    m_F310_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, m_FlapManipulatorSubsystem));
     
     /*
     m_F310_Copilot_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 0));

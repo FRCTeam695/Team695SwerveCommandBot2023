@@ -17,6 +17,8 @@ public class FlapManipulatorSubsystem extends SubsystemBase
   private CANSparkMax m_flap = new CANSparkMax(52, MotorType.kBrushless);
   private RelativeEncoder m_encoder = m_flap.getEncoder();
 
+  private boolean deploy;
+
   public FlapManipulatorSubsystem() 
   {
     m_flap.setIdleMode(IdleMode.kBrake);
@@ -39,6 +41,16 @@ public class FlapManipulatorSubsystem extends SubsystemBase
   public double getPosition()
   {
     return(m_encoder.getPosition());
+  }
+
+  public void setDeploy(boolean setDeploy)
+  {
+    deploy = setDeploy;
+  }
+
+  public boolean isDeployed()
+  {
+    return deploy;
   }
 
   @Override
