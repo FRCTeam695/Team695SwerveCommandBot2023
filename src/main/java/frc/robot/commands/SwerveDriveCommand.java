@@ -22,7 +22,6 @@ public class SwerveDriveCommand extends CommandBase
   private final DoubleSupplier YjSupplier;
   private final DoubleSupplier ZjSupplier;
   private final SwerveDriveSubsystem drivetrain;
-  private final SendableChooser<Double> m_angleChooser;
 
   public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser) 
   {
@@ -30,7 +29,6 @@ public class SwerveDriveCommand extends CommandBase
     this.YjSupplier = YjSupplier;
     this.ZjSupplier = ZjSupplier;
     this.drivetrain = drivetrain;
-    this.m_angleChooser = angleChooser;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drivetrain);
   }
@@ -82,10 +80,6 @@ public class SwerveDriveCommand extends CommandBase
     double tFWD = FWD * Math.cos(gyro_rad) + STR * Math.sin(gyro_rad);
     STR = -FWD * Math.sin(gyro_rad) + STR * Math.cos(gyro_rad);
     FWD = tFWD;
-
-    SmartDashboard.putNumber("STR", STR);
-    SmartDashboard.putNumber("FWD", FWD);
-    SmartDashboard.putNumber("RCW", RCW);
 
     // Compute temporary work variables
     double A = drivetrain.nearzero(STR + RCW * (L/R));
