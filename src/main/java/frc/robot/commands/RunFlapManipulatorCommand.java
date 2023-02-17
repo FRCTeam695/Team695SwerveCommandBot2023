@@ -7,19 +7,22 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FlapManipulatorSubsystem;
 
 public class RunFlapManipulatorCommand extends CommandBase 
 {
   private final FlapManipulatorSubsystem m_FlapManipulatorSubsystem;
+  private final ElevatorSubsystem m_ElevatorSubsystem;
 
   private boolean deploy;
 
-  public RunFlapManipulatorCommand(FlapManipulatorSubsystem FlapManipulatorSubsystem, boolean deploy) 
+  public RunFlapManipulatorCommand(FlapManipulatorSubsystem FlapManipulatorSubsystem, boolean deploy, ElevatorSubsystem elevatorSubsystem) 
   {
     this.m_FlapManipulatorSubsystem = FlapManipulatorSubsystem;
     this.deploy = deploy;
-    addRequirements(m_FlapManipulatorSubsystem);
+    this.m_ElevatorSubsystem = elevatorSubsystem;
+    addRequirements(m_FlapManipulatorSubsystem, m_ElevatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -32,28 +35,35 @@ public class RunFlapManipulatorCommand extends CommandBase
   @Override
   public void execute() 
   {
-    if (deploy == true)
+    if(m_ElevatorSubsystem.getLevel() <= 0)
     {
-      if (m_FlapManipulatorSubsystem.getPosition() < 6)
+      m_FlapManipulatorSubsystem.setDeploy(deploy);
+
+      if (deploy == true)
       {
-        m_FlapManipulatorSubsystem.setSpeed(0.2);
+        if (m_FlapManipulatorSubsystem.getPosition() < 6)
+        {
+          m_FlapManipulatorSubsystem.setSpeed(0.2);
+        }
+        else
+        {
+          m_FlapManipulatorSubsystem.setSpeed(0.05);
+        }
       }
       else
       {
-        m_FlapManipulatorSubsystem.setSpeed(0.05);
+        if (m_FlapManipulatorSubsystem.getPosition() > 0)
+        {
+          m_FlapManipulatorSubsystem.setSpeed(-0.1);
+        }
+        else
+        {
+          m_FlapManipulatorSubsystem.setSpeed(-0.05);
+        }
       }
     }
     else
-    {
-      if (m_FlapManipulatorSubsystem.getPosition() > 0)
-      {
-        m_FlapManipulatorSubsystem.setSpeed(-0.1);
-      }
-      else
-      {
-        m_FlapManipulatorSubsystem.setSpeed(-0.05);
-      }
-    }
+    {} 
   }
 
   // Called once the command ends or is interrupted.
