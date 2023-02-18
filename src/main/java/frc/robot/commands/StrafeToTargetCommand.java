@@ -61,9 +61,23 @@ public class StrafeToTargetCommand extends CommandBase
 
   public void driveStrafe(double adjXj)
   {
-    double gyroError = initialRobotYaw - drivetrain.gyroYaw;
+    double gyroError = Math.abs(initialRobotYaw) - Math.abs(drivetrain.gyroYaw);
+    double kPMultiplier = 0;
+    double adjZj = 0;
 
-    double adjZj = gyroError * (0.05);
+    if((Math.abs(initialTicks - drivetrain.drive[0].getSelectedSensorPosition(0))) >= 5000)
+    {
+      if(drivetrain.gyroYaw < 0 )
+      {
+        kPMultiplier = -1;
+      }
+      else
+      {
+        kPMultiplier = 1;
+      }
+
+      adjZj = gyroError * ((kPMultiplier) * 0.02);    //0.015
+    }
 
     // Min and max steering motor percent output
     double MinSteer = -1.0;
