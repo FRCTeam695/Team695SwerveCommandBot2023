@@ -71,19 +71,19 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Cancoder pid controllers
   public static PIDController cancoderpid[] =
   {
-    new PIDController(0.015, 0, 0.0001),
-    new PIDController(0.015, 0, 0.0001),
-    new PIDController(0.015, 0, 0.0001),
-    new PIDController(0.015, 0, 0.0001)
+    new PIDController(0.025, 0.01, 0.0001),
+    new PIDController(0.025, 0.01, 0.0001),
+    new PIDController(0.025, 0.01, 0.0001),
+    new PIDController(0.025, 0.01, 0.0001)
   };
 
   // Talon encoder pid controllers (TODO:  move these directly into the falcon 500's)
   public static PIDController talonpid[] =
   {
-    new PIDController(0.01, 0.001, 0),
-    new PIDController(0.01, 0.001, 0),
-    new PIDController(0.01, 0.001, 0),
-    new PIDController(0.01, 0.001, 0)
+    new PIDController(0.01, 0.00, 0),
+    new PIDController(0.01, 0.00, 0),
+    new PIDController(0.01, 0.00, 0),
+    new PIDController(0.01, 0.00, 0)
   };
 
   public double nearzero(double val)
@@ -190,11 +190,11 @@ public class SwerveDriveSubsystem extends SubsystemBase
   {
     gyroYaw = gyro.getYaw();
     SmartDashboard.putNumber("Yaw", gyroYaw);
+
+    for(int lp=0; lp<4; lp++)
+  {
+      SmartDashboard.putNumber("CC" + lp, cancoder[lp].getAbsolutePosition());
+  }
   }
 
-  @Override
-  public void simulationPeriodic() 
-  {
-    // This method will be called once per scheduler run during simulation
-  }
 }
