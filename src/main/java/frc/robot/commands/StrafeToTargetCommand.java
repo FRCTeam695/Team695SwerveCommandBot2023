@@ -49,7 +49,6 @@ public class StrafeToTargetCommand extends CommandBase
   {
     initialRobotYaw = drivetrain.gyroYaw;
     initialTicks = drivetrain.drive[0].getSelectedSensorPosition();
-    initialRobotForwardVelocity = 0;
     //drivetrain.drive[0].setSelectedSensorPosition(0,0,100);
   }
 
