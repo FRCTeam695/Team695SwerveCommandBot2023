@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.FlapManipulatorSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 
 public class SwerveDriveCommand extends CommandBase 
@@ -24,19 +23,17 @@ public class SwerveDriveCommand extends CommandBase
   private final DoubleSupplier YjSupplier;
   private final DoubleSupplier ZjSupplier;
   private final SwerveDriveSubsystem drivetrain;
-  private final FlapManipulatorSubsystem m_FlapManipulatorSubsystem;
   private final ElevatorSubsystem m_ElevatorSubsystem;
 
-  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, FlapManipulatorSubsystem flapManipulatorSubsystem, ElevatorSubsystem elevatorSubsystem) 
+  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, ElevatorSubsystem elevatorSubsystem) 
   {
     this.XjSupplier = XjSupplier;
     this.YjSupplier = YjSupplier;
     this.ZjSupplier = ZjSupplier;
     this.drivetrain = drivetrain;
-    this.m_FlapManipulatorSubsystem = flapManipulatorSubsystem;
     this.m_ElevatorSubsystem = elevatorSubsystem;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(drivetrain, flapManipulatorSubsystem, elevatorSubsystem);
+    addRequirements(drivetrain, elevatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -51,13 +48,6 @@ public class SwerveDriveCommand extends CommandBase
     double Xj = XjSupplier.getAsDouble();
     double Yj = YjSupplier.getAsDouble();
     double Zj = ZjSupplier.getAsDouble();
-
-    if(m_FlapManipulatorSubsystem.isDeployed())
-    {
-      Xj = 0.2 * Xj;
-      Yj = 0.2 * Yj;
-      Zj = 0.2 * Zj;
-    }
 
     if(m_ElevatorSubsystem.getLevel() >= 2)
     {
@@ -93,10 +83,6 @@ public class SwerveDriveCommand extends CommandBase
     // Limit rotate to 20% motor
     RCW /= 3;
 
-    if(m_FlapManipulatorSubsystem.isDeployed())
-    {
-      RCW *=3;
-    }
     if(m_ElevatorSubsystem.getLevel() >= 2)
     {
       RCW *=3;

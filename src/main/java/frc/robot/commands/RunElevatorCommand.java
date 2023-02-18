@@ -10,20 +10,17 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.FlapManipulatorSubsystem;
 
 public class RunElevatorCommand extends CommandBase 
 {
   private final ElevatorSubsystem m_ElevatorSubsystem;
-  private final FlapManipulatorSubsystem m_FlapManipulatorSubsystem;
 
   int newLevel;
   
-  public RunElevatorCommand(ElevatorSubsystem elevatorSubsystem, FlapManipulatorSubsystem flapManipulatorSubsystem) 
+  public RunElevatorCommand(ElevatorSubsystem elevatorSubsystem) 
   {
     this.m_ElevatorSubsystem = elevatorSubsystem;
-    this.m_FlapManipulatorSubsystem = flapManipulatorSubsystem;
-    addRequirements(m_ElevatorSubsystem, m_FlapManipulatorSubsystem);
+    addRequirements(m_ElevatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -38,12 +35,7 @@ public class RunElevatorCommand extends CommandBase
   {
     long currentLevel = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentLevel").getInteger(-1);
 
-    if(m_FlapManipulatorSubsystem.isDeployed())
-    {}
-    else
-    {
-      m_ElevatorSubsystem.runToLevel((int)currentLevel);
-    }
+    m_ElevatorSubsystem.runToLevel((int)currentLevel);
   
     return;
 
