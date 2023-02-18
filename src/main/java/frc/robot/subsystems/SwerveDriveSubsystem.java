@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -183,6 +184,324 @@ public class SwerveDriveSubsystem extends SubsystemBase
       defaultrotation[3] = 1;
     }
     */
+  }
+
+  public void driveStrafe(double adjXj, double initialRobotYaw, double initialTicks)
+  {
+    double gyroError = Math.abs(initialRobotYaw) - Math.abs(gyroYaw);
+    double kPMultiplier = 0;
+    double adjZj = 0;
+
+    if((Math.abs(initialTicks - drive[0].getSelectedSensorPosition(0))) >= 5000)
+    {
+      if(gyroYaw < 0 )
+      {
+        kPMultiplier = -1;
+      }
+      else
+      {
+        kPMultiplier = 1;
+      }
+
+      adjZj = gyroError * ((kPMultiplier) * 0.02);    //0.015
+    }
+
+    // Min and max steering motor percent output
+    double MinSteer = -1.0;
+    double MaxSteer = 1.0;
+
+    // Temporary variables for setpoint and control output
+    double sp;
+    double co;
+
+    // Chassis dimensions
+    double L = 25;
+    double W = 25;
+    double R = Math.sqrt(L*L + W*W);
+
+    // Convert joystick values to strafe, forward, and rotate
+    double deadband = 0.025;  // Originally 0.075
+    double STR = adjXj; 
+    if (STR > -deadband && STR < deadband) STR = 0;
+
+    double rotationDeadband = 0.0125;
+    double RCW = adjZj;
+    if (RCW > -rotationDeadband && RCW < rotationDeadband) RCW = 0;
+
+    RCW /= 3;
+
+    double FWD = 0;
+    
+    // adjust for field oriented drive
+    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
+    double gyro_rad = gyroYaw / 180 * Math.PI;
+    double tFWD = STR * Math.sin(gyro_rad);
+    STR = STR * Math.cos(gyro_rad);
+    FWD = tFWD;
+
+    SmartDashboard.putNumber("aSTR", STR);
+    SmartDashboard.putNumber("aFWD", FWD);
+    
+    // Compute temporary work variables
+    double A = nearzero(STR + RCW * (L/R));
+    double B = nearzero(STR - RCW * (L/R));
+    double C = nearzero(FWD + RCW * (W/R));
+    double D = nearzero(FWD - RCW * (W/R));
+
+    // Compute angles (range is -180 to 180 degrees)
+    double[] angle =
+    {
+      nearzero(Math.atan2(A,D) * 180 / Math.PI),
+      nearzero(Math.atan2(A,C) * 180 / Math.PI),
+      nearzero(Math.atan2(B,C) * 180 / Math.PI),
+      nearzero(Math.atan2(B,D) * 180 / Math.PI)
+    };
+
+    // Compute speeds
+    double[] speed =
+    {
+      Math.sqrt(A*A + D*D),
+      Math.sqrt(A*A + C*C),
+      Math.sqrt(B*B + C*C),
+      Math.sqrt(B*B + D*D)
+    };
+
+    // Set default drive rotations
+    double[] rotation =
+    {
+      defaultrotation[0],
+      defaultrotation[1],
+      defaultrotation[2],
+      defaultrotation[3]
+    };
+
+    // Normalize speeds for motor controllers (range is 0 to 1)
+    double max = 0;
+    for(int lp=0; lp<4; lp++) if (speed[lp] > max) max = speed[lp];
+    if (max > 1) for(int lp=0; lp<4; lp++) speed[lp] /= max;
+    
+    // Only run motors if nonzero speed(s)
+    if (max != 0)
+    {
+
+      // Loop to compute and apply steering angle and drive power to each motor
+      for(int lp=0; lp<4; lp++)
+      {
+
+        // Get target steering angle (setpoint) for this corner
+        // (Invert because falcons are upside down)
+        sp = angle[lp];
+
+        // get current steering angle (process variable) for this corner
+        double ec = steer[lp].getSelectedSensorPosition(0);
+        double pv = (ec % Constants.talon_mk4i_360_count) / Constants.talon_mk4i_360_count * 360;
+        if (pv <= -180)
+        {
+          pv += 360;
+        }
+        else if (pv >= 180)
+        {
+          pv -= 360;
+        }
+
+        // Compute steering angle change
+        double delta = Math.abs(sp - pv);
+
+        // Adjust steering angle for optimized turn
+        if (delta > 90 && delta < 270)
+        {
+          rotation[lp] = -defaultrotation[lp];
+          sp = (sp >= 0) ? sp - 180 : sp + 180;
+        }
+
+        // Adjust angle orientation for PID depending on direction of setpoint
+        if (sp < -135 || sp > 135)
+        {
+          if (sp < 0)
+          {
+            sp += 360;
+          }
+          if (pv < 0)
+          {
+            pv += 360;
+          }
+        }
+
+        co = MathUtil.clamp(talonpid[lp].calculate(pv, sp), MinSteer, MaxSteer);
+
+        // Send steering output to falcon
+        steer[lp].set(ControlMode.PercentOutput, co);
+
+        // Send drive output to falcon
+        drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
+
+        // Convenient place to do cancoder home control loop cleanup
+        cancoderpid[lp].reset();
+      }
+    }
+  }
+
+  public void driveStraight(double adjYj, double initialRobotYaw, double initialTicks)
+  {
+    double gyroError = Math.abs(initialRobotYaw) - Math.abs(gyroYaw);
+    double kPMultiplier = 0;
+    double adjZj = 0;
+
+    if((Math.abs(initialTicks - drive[0].getSelectedSensorPosition(0))) >= 5000)
+    {
+      if(gyroYaw < 0 )
+      {
+        kPMultiplier = -1;
+      }
+      else
+      {
+        kPMultiplier = 1;
+      }
+
+      adjZj = gyroError * ((kPMultiplier) * 0.02);    //0.015
+    }
+
+    // Min and max steering motor percent output
+    double MinSteer = -1.0;
+    double MaxSteer = 1.0;
+
+    // Temporary variables for setpoint and control output
+    double sp;
+    double co;
+
+    // Chassis dimensions
+    double L = 25;
+    double W = 25;
+    double R = Math.sqrt(L*L + W*W);
+
+    // Convert joystick values to strafe, forward, and rotate
+    double deadband = 0.025;  // Originally 0.075
+
+    double FWD = adjYj;
+    if (FWD > -deadband && FWD < deadband) FWD = 0;
+
+    double rotationDeadband = 0.0125;
+    double RCW = adjZj;
+    if (RCW > -rotationDeadband && RCW < rotationDeadband) RCW = 0;
+
+    RCW /= 3;
+
+    double STR = 0;
+
+    // adjust for field oriented drive
+    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
+    double gyro_rad = gyroYaw / 180 * Math.PI;
+    double tFWD = FWD * Math.cos(gyro_rad);
+    STR = -FWD * Math.sin(gyro_rad);
+    FWD = tFWD;
+
+    // Compute temporary work variables
+    double A = nearzero(STR + RCW * (L/R));
+    double B = nearzero(STR - RCW * (L/R));
+    double C = nearzero(FWD + RCW * (W/R));
+    double D = nearzero(FWD - RCW * (W/R));
+
+    // Compute angles (range is -180 to 180 degrees)
+    double[] angle =
+    {
+      nearzero(Math.atan2(A,D) * 180 / Math.PI),
+      nearzero(Math.atan2(A,C) * 180 / Math.PI),
+      nearzero(Math.atan2(B,C) * 180 / Math.PI),
+      nearzero(Math.atan2(B,D) * 180 / Math.PI)
+    };
+
+    // Compute speeds
+    double[] speed =
+    {
+      Math.sqrt(A*A + D*D),
+      Math.sqrt(A*A + C*C),
+      Math.sqrt(B*B + C*C),
+      Math.sqrt(B*B + D*D)
+    };
+
+    // Set default drive rotations
+    double[] rotation =
+    {
+      defaultrotation[0],
+      defaultrotation[1],
+      defaultrotation[2],
+      defaultrotation[3]
+    };
+
+    // Normalize speeds for motor controllers (range is 0 to 1)
+    double max = 0;
+    for(int lp=0; lp<4; lp++) if (speed[lp] > max) max = speed[lp];
+    if (max > 1) for(int lp=0; lp<4; lp++) speed[lp] /= max;
+    
+    // Only run motors if nonzero speed(s)
+    if (max != 0)
+    {
+
+      // Loop to compute and apply steering angle and drive power to each motor
+      for(int lp=0; lp<4; lp++)
+      {
+
+        // Get target steering angle (setpoint) for this corner
+        // (Invert because falcons are upside down)
+        sp = angle[lp];
+
+        // get current steering angle (process variable) for this corner
+        double ec = steer[lp].getSelectedSensorPosition(0);
+        double pv = (ec % Constants.talon_mk4i_360_count) / Constants.talon_mk4i_360_count * 360;
+        if (pv <= -180)
+        {
+          pv += 360;
+        }
+        else if (pv >= 180)
+        {
+          pv -= 360;
+        }
+
+        // Compute steering angle change
+        double delta = Math.abs(sp - pv);
+
+        // Adjust steering angle for optimized turn
+        if (delta > 90 && delta < 270)
+        {
+          rotation[lp] = -defaultrotation[lp];
+          sp = (sp >= 0) ? sp - 180 : sp + 180;
+        }
+
+        // Adjust angle orientation for PID depending on direction of setpoint
+        if (sp < -135 || sp > 135)
+        {
+          if (sp < 0)
+          {
+            sp += 360;
+          }
+          if (pv < 0)
+          {
+            pv += 360;
+          }
+        }
+
+        co = MathUtil.clamp(talonpid[lp].calculate(pv, sp), MinSteer, MaxSteer);
+
+        // Send steering output to falcon
+        steer[lp].set(ControlMode.PercentOutput, co);
+
+        // Send drive output to falcon
+        drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
+
+        // Convenient place to do cancoder home control loop cleanup
+        cancoderpid[lp].reset();
+      }
+    }
+
+    // Otherwise stop motors
+    else
+    {
+      for(int lp=0; lp<4; lp++)
+      {
+        steer[lp].set(ControlMode.PercentOutput, 0);
+        drive[lp].set(ControlMode.PercentOutput, 0);
+      }
+    }
   }
 
   @Override
