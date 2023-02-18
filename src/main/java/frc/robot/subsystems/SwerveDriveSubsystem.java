@@ -512,7 +512,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
     for(int lp=0; lp<4; lp++)
   {
-      SmartDashboard.putNumber("CC" + lp, cancoder[lp].getAbsolutePosition());
+      SmartDashboard.putNumber(lp +"-" + cancoderoffset[lp], cancoder[lp].getAbsolutePosition());
   }
   }
 
