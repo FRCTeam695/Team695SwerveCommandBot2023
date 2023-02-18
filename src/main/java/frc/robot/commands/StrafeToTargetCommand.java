@@ -28,6 +28,7 @@ public class StrafeToTargetCommand extends CommandBase
   private final double strafeSpeed;
   private final double adjustmentTicks;
 
+  double initialTicks;
   double initialRobotYaw;
   
   public StrafeToTargetCommand(SwerveDriveSubsystem drivetrain, VisionSubsystem visionSubsystem, SendableChooser<Double> angleChooser, double ticksToStrafe, double strafeSpeed, double adjustmentTicks) 
@@ -47,7 +48,9 @@ public class StrafeToTargetCommand extends CommandBase
   public void initialize() 
   {
     initialRobotYaw = drivetrain.gyroYaw;
-    drivetrain.drive[0].setSelectedSensorPosition(0);
+    initialTicks = drivetrain.drive[0].getSelectedSensorPosition();
+    initialRobotForwardVelocity = 0;
+    //drivetrain.drive[0].setSelectedSensorPosition(0,0,100);
   }
 
   public void driveStrafe(double adjXj)
@@ -218,7 +221,8 @@ public class StrafeToTargetCommand extends CommandBase
   public boolean isFinished()
   {
     double adjustedTicksToStrafe = ticksToStrafe + adjustmentTicks;
-    if (Math.abs(drivetrain.drive[0].getSelectedSensorPosition(0)) >= adjustedTicksToStrafe)    // Previously 87000
+    double deltaTicks = Math.abs(initialTicks - drivetrain.drive[0].getSelectedSensorPosition(0));
+    if (deltaTicks >= adjustedTicksToStrafe)    // Previously 87000
     {
       System.out.println("Strafe isFinished has returned true");
       return true;

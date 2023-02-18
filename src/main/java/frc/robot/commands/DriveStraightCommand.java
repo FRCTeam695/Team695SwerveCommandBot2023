@@ -17,15 +17,18 @@ public class DriveStraightCommand extends CommandBase
   private final SwerveDriveSubsystem drivetrain;
   private final SendableChooser<Double> m_angleChooser;
   private final double driveSpeed;
+  private final double ticksToDrive;
 
+  double initialTicks;
   double initialRobotYaw;
 
   /** Creates a new DriveStraightCommand. */
-  public DriveStraightCommand(SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, double driveSpeed) 
+  public DriveStraightCommand(SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, double ticksToDrive, double driveSpeed) 
   {
     this.drivetrain = drivetrain;
     this.m_angleChooser = angleChooser;
     this.driveSpeed = driveSpeed;
+    this.ticksToDrive = ticksToDrive;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drivetrain);
   }
@@ -35,6 +38,9 @@ public class DriveStraightCommand extends CommandBase
   public void initialize() 
   {
     initialRobotYaw = drivetrain.gyroYaw;
+    initialTicks = drivetrain.drive[0].getSelectedSensorPosition();
+    System.out.println("DRIVE STRAIGHT INITIALIZED");
+    //drivetrain.drive[0].setSelectedSensorPosition(0, 0,100);
   }
 
   public void driveStraight(double adjYj)
@@ -205,7 +211,14 @@ public class DriveStraightCommand extends CommandBase
 
   // Returns true when the command should end.
   @Override
-  public boolean isFinished() {
+  public boolean isFinished() 
+  {
+    double deltaTicks = Math.abs(initialTicks - drivetrain.drive[0].getSelectedSensorPosition(0));
+    if (deltaTicks >= ticksToDrive)
+    {
+      System.out.println("DRIVE STRAIGHT HAS ENDED");
+      return true;
+    }
     return false;
-  }
+  }  
 }
