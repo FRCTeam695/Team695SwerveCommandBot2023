@@ -93,6 +93,14 @@ public class SwerveDriveCommand extends CommandBase
     // Limit rotate to 20% motor
     RCW /= 3;
 
+    if(m_FlapManipulatorSubsystem.isDeployed())
+    {
+      RCW *=3;
+    }
+    if(m_ElevatorSubsystem.getLevel() >= 2)
+    {
+      RCW *=3;
+    }
 
     // adjust for field oriented drive
     //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
