@@ -21,6 +21,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
   public ElevatorIntakeSubsystem() 
   {
     m_NEO550Motor.setIdleMode(IdleMode.kBrake);
+    SmartDashboard.putData(this);
   }
 
   public void setNEOMotorSpeed(double speed)
@@ -28,13 +29,13 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     currentIntakeMode = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentIntakeMode").getInteger(-1);
     if (currentIntakeMode == 1)
     {
-      m_NEO550Motor.setSmartCurrentLimit(25);
+      m_NEO550Motor.setSmartCurrentLimit(20);
       m_NEO550Motor.set(speed);
     }
     else if(currentIntakeMode == 2)
     {
-      m_NEO550Motor.setSmartCurrentLimit(25);
-      m_NEO550Motor.set(-0.7*speed);
+      m_NEO550Motor.setSmartCurrentLimit(20);
+      m_NEO550Motor.set(-1*speed);
     }
   }
 
