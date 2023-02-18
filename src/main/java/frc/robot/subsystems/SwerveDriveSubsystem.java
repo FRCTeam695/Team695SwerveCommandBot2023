@@ -33,10 +33,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Cancoders
   public static WPI_CANCoder cancoder[] =
   {
-    new WPI_CANCoder(11),
-    new WPI_CANCoder(21),
-    new WPI_CANCoder(31),
-    new WPI_CANCoder(41)
+    new WPI_CANCoder(11, "drivetrain"),
+    new WPI_CANCoder(21, "drivetrain"),
+    new WPI_CANCoder(31, "drivetrain"),
+    new WPI_CANCoder(41, "drivetrain")
   };
 
   // Cancoder mounting orientation offsets (degrees)
@@ -47,19 +47,19 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Steering motors
   public static TalonFX steer[] = 
   {
-    new TalonFX(12),
-    new TalonFX(22),
-    new TalonFX(32),
-    new TalonFX(42)
+    new TalonFX(12, "drivetrain"),
+    new TalonFX(22, "drivetrain"),
+    new TalonFX(32, "drivetrain"),
+    new TalonFX(42, "drivetrain")
   };
 
   // Drive motors
   public static TalonFX drive[] = 
   {
-    new TalonFX(13),
-    new TalonFX(23),
-    new TalonFX(33),
-    new TalonFX(43)
+    new TalonFX(13, "drivetrain"),
+    new TalonFX(23, "drivetrain"),
+    new TalonFX(33, "drivetrain"),
+    new TalonFX(43, "drivetrain")
   };
   
   // Default drive rotation directions (corner 1 is negated due to the camcoder mounting orientation)
