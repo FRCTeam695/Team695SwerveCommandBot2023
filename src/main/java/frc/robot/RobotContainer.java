@@ -77,6 +77,8 @@ public class RobotContainer
 
   SendableChooser<Double> m_angleChooser = new SendableChooser<>();
   
+  //long scorePosition;
+  
   // Limelight:
   private final NetworkTableInstance RobotMainNetworkTableInstance = NetworkTableInstance.getDefault();
   private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem(RobotMainNetworkTableInstance, 0);
@@ -92,27 +94,34 @@ public class RobotContainer
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public Command scoreCones()
   {
-    return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
-    .andThen(new WaitCommand(1.5))
-    .andThen(new DriveStraightCommand(m_swerveDrivetrain, m_angleChooser, -0.075).withTimeout(1.0))
-    .andThen(new WaitCommand(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 3000, -0.08, 0))    //10000
+    /*
+    scorePosition = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentGrid").getInteger(-1);
+    double travelTicks = (((double)scorePosition )* 26400) + 3000;
+    SmartDashboard.putNumber("TravelTicks", travelTicks);
+    */
+
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+    .andThen(new DriveStraightCommand(m_swerveDrivetrain, m_angleChooser, 5000, 0.08))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 0.2, 0));    //10000
+    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
+    /*
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 57500, 0.15, 0))    //84000
     .andThen(new WaitCommand(1.5))
     //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 57500, -0.15, 0))    //84000
-    .andThen(new WaitCommand(1.5))
-    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 8000, -0.08, 0))
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 8000, 0.08, 0))
     .andThen(new WaitCommand(1.5));
+    */
     //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5));
   }
 
+  /*
   public Command strafeTest()
   {
     return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
     .andThen(new WaitCommand(1.5))
     .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 300000, -0.15, 0));
   }
+  */
 
   public RobotContainer() 
   {

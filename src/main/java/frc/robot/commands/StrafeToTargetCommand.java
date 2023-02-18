@@ -9,6 +9,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.interfaces.Accelerometer;
@@ -24,19 +25,21 @@ public class StrafeToTargetCommand extends CommandBase
   private final SwerveDriveSubsystem drivetrain;
   private final VisionSubsystem visionSubsystem;
   private final SendableChooser<Double> m_angleChooser;
-  private final double ticksToStrafe;
+  //private final double ticksToStrafe;
   private final double strafeSpeed;
   private final double adjustmentTicks;
 
   double initialTicks;
   double initialRobotYaw;
+  long scorePosition;
+  double ticksToStrafe;
   
-  public StrafeToTargetCommand(SwerveDriveSubsystem drivetrain, VisionSubsystem visionSubsystem, SendableChooser<Double> angleChooser, double ticksToStrafe, double strafeSpeed, double adjustmentTicks) 
+  public StrafeToTargetCommand(SwerveDriveSubsystem drivetrain, VisionSubsystem visionSubsystem, SendableChooser<Double> angleChooser, double strafeSpeed, double adjustmentTicks) 
   {
     this.drivetrain = drivetrain;
     this.visionSubsystem = visionSubsystem;
     this.m_angleChooser = angleChooser;
-    this.ticksToStrafe = ticksToStrafe;
+    //this.ticksToStrafe = ticksToStrafe;
     this.strafeSpeed = strafeSpeed;
     this.adjustmentTicks = adjustmentTicks;
     
@@ -47,6 +50,10 @@ public class StrafeToTargetCommand extends CommandBase
   @Override
   public void initialize() 
   {
+    scorePosition = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentGrid").getInteger(-1);
+    ticksToStrafe = (((double)scorePosition )* 30300) + 3000;       // Conversion factor previously 26400
+    SmartDashboard.putNumber("TravelTicks", ticksToStrafe);
+
     initialRobotYaw = drivetrain.gyroYaw;
     initialTicks = drivetrain.drive[0].getSelectedSensorPosition();
     //drivetrain.drive[0].setSelectedSensorPosition(0,0,100);
