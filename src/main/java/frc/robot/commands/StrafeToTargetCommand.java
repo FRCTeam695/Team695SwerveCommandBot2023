@@ -80,11 +80,11 @@ public class StrafeToTargetCommand extends CommandBase
 
     RCW /= 3;
 
-    double FWD;
+    double FWD = 0;
     
     // adjust for field oriented drive
-    double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
-    //double gyro_rad = gyro.getYaw() / 180 * Math.PI;
+    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
+    double gyro_rad = drivetrain.gyroYaw / 180 * Math.PI;
     double tFWD = STR * Math.sin(gyro_rad);
     STR = STR * Math.cos(gyro_rad);
     FWD = tFWD;

@@ -68,11 +68,11 @@ public class DriveStraightCommand extends CommandBase
 
     RCW /= 3;
 
-    double STR;
+    double STR = 0;
 
     // adjust for field oriented drive
-    double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
-    //double gyro_rad = gyro.getYaw() / 180 * Math.PI;
+    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
+    double gyro_rad = drivetrain.gyroYaw / 180 * Math.PI;
     double tFWD = FWD * Math.cos(gyro_rad);
     STR = -FWD * Math.sin(gyro_rad);
     FWD = tFWD;
