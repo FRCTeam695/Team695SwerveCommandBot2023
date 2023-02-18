@@ -86,8 +86,8 @@ public class RobotContainer
   private final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
-  private final Command m_F310_swerveCommand = new SwerveDriveCommand(m_F310_Left_XAxis, m_F310_Left_YAxis, m_F310_Right_XAxis, m_swerveDrivetrain, m_angleChooser);
-  private final Command m_Xbox_swerveCommand = new SwerveDriveCommand(m_Xbox_Left_XAxis, m_Xbox_Left_YAxis, m_Xbox_Right_XAxis, m_swerveDrivetrain, m_angleChooser);
+  private final Command m_F310_swerveCommand = new SwerveDriveCommand(m_F310_Left_XAxis, m_F310_Left_YAxis, m_F310_Right_XAxis, m_swerveDrivetrain, m_angleChooser, m_FlapManipulatorSubsystem, m_ElevatorSubsystem);
+  private final Command m_Xbox_swerveCommand = new SwerveDriveCommand(m_Xbox_Left_XAxis, m_Xbox_Left_YAxis, m_Xbox_Right_XAxis, m_swerveDrivetrain, m_angleChooser, m_FlapManipulatorSubsystem, m_ElevatorSubsystem);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public Command scoreCones()

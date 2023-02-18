@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.FlapManipulatorSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 
 public class SwerveDriveCommand extends CommandBase 
@@ -22,15 +24,19 @@ public class SwerveDriveCommand extends CommandBase
   private final DoubleSupplier YjSupplier;
   private final DoubleSupplier ZjSupplier;
   private final SwerveDriveSubsystem drivetrain;
+  private final FlapManipulatorSubsystem m_FlapManipulatorSubsystem;
+  private final ElevatorSubsystem m_ElevatorSubsystem;
 
-  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser) 
+  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, FlapManipulatorSubsystem flapManipulatorSubsystem, ElevatorSubsystem elevatorSubsystem) 
   {
     this.XjSupplier = XjSupplier;
     this.YjSupplier = YjSupplier;
     this.ZjSupplier = ZjSupplier;
     this.drivetrain = drivetrain;
+    this.m_FlapManipulatorSubsystem = flapManipulatorSubsystem;
+    this.m_ElevatorSubsystem = elevatorSubsystem;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(drivetrain);
+    addRequirements(drivetrain, flapManipulatorSubsystem, elevatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -42,9 +48,23 @@ public class SwerveDriveCommand extends CommandBase
   public void execute() 
   {
     // Scaled to 1/2 speed
-    double Xj = XjSupplier.getAsDouble() * 0.5;
-    double Yj = YjSupplier.getAsDouble() * 0.5;
-    double Zj = ZjSupplier.getAsDouble() * 0.5;
+    double Xj = XjSupplier.getAsDouble();
+    double Yj = YjSupplier.getAsDouble();
+    double Zj = ZjSupplier.getAsDouble();
+
+    if(m_FlapManipulatorSubsystem.isDeployed())
+    {
+      Xj = 0.2 * Xj;
+      Yj = 0.2 * Yj;
+      Zj = 0.2 * Zj;
+    }
+
+    if(m_ElevatorSubsystem.getLevel() >= 2)
+    {
+      Xj = 0.2 * Xj;
+      Yj = 0.2 * Yj;
+      Zj = 0.2 * Zj;
+    }
 
     // Min and max steering motor percent output
     double MinSteer = -1.0;
