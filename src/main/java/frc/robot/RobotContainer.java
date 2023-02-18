@@ -35,19 +35,19 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 public class RobotContainer 
 {
 
-  //F310 Variables:
-  private static Joystick m_Logitech_F310 = new Joystick(0);
-  private final JoystickButton m_F310_A = new JoystickButton(m_Logitech_F310, 1);
-  private final JoystickButton m_F310_B = new JoystickButton(m_Logitech_F310, 2);
-  private final JoystickButton m_F310_X = new JoystickButton(m_Logitech_F310, 3);
-  private final JoystickButton m_F310_Y = new JoystickButton(m_Logitech_F310, 4);
-  private final JoystickButton m_F310_LeftBumper = new JoystickButton(m_Logitech_F310, 5);
-  private final JoystickButton m_F310_RightBumper = new JoystickButton(m_Logitech_F310, 6);
-  private final JoystickButton m_F310_BACK = new JoystickButton(m_Logitech_F310, 7);
-  private final JoystickButton m_F310_START = new JoystickButton(m_Logitech_F310, 8);
-  private final DoubleSupplier m_F310_Left_XAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(0), 3));
-  private final DoubleSupplier m_F310_Left_YAxis = () -> (Math.pow(m_Logitech_F310.getRawAxis(1), 3));
-  private final DoubleSupplier m_F310_Right_XAxis = () -> (m_Logitech_F310.getRawAxis(4));
+  //Pilot Variables:
+  private static Joystick m_Pilot_Controller = new Joystick(0);
+  private final JoystickButton m_Pilot_A = new JoystickButton(m_Pilot_Controller, 1);
+  private final JoystickButton m_Pilot_B = new JoystickButton(m_Pilot_Controller, 2);
+  private final JoystickButton m_Pilot_X = new JoystickButton(m_Pilot_Controller, 3);
+  private final JoystickButton m_Pilot_Y = new JoystickButton(m_Pilot_Controller, 4);
+  private final JoystickButton m_Pilot_LeftBumper = new JoystickButton(m_Pilot_Controller, 5);
+  private final JoystickButton m_Pilot_RightBumper = new JoystickButton(m_Pilot_Controller, 6);
+  private final JoystickButton m_Pilot_BACK = new JoystickButton(m_Pilot_Controller, 7);
+  private final JoystickButton m_Pilot_START = new JoystickButton(m_Pilot_Controller, 8);
+  private final DoubleSupplier m_Pilot_Left_XAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(0), 3));
+  private final DoubleSupplier m_Pilot_Left_YAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(1), 3));
+  private final DoubleSupplier m_Pilot_Right_XAxis = () -> (m_Pilot_Controller.getRawAxis(4));
 
   //F310_Copilot Variables
   /*
@@ -66,12 +66,14 @@ public class RobotContainer
   */
 
   //Xbox Variables:
+  /*
   private static Joystick m_Xbox = new Joystick(2);
   private final JoystickButton m_Xbox_A = new JoystickButton(m_Xbox, 1);
   private final JoystickButton m_Xbox_B = new JoystickButton(m_Xbox, 2);
   private final DoubleSupplier m_Xbox_Left_XAxis = () -> (Math.pow(m_Xbox.getRawAxis(0), 3));
   private final DoubleSupplier m_Xbox_Left_YAxis = () -> (Math.pow(m_Xbox.getRawAxis(1), 3));
   private final DoubleSupplier m_Xbox_Right_XAxis = () -> (m_Xbox.getRawAxis(4));
+  */
 
   SendableChooser<Double> m_angleChooser = new SendableChooser<>();
   
@@ -86,8 +88,7 @@ public class RobotContainer
   private final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
   // Commands:
   private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
-  private final Command m_F310_swerveCommand = new SwerveDriveCommand(m_F310_Left_XAxis, m_F310_Left_YAxis, m_F310_Right_XAxis, m_swerveDrivetrain, m_angleChooser, m_FlapManipulatorSubsystem, m_ElevatorSubsystem);
-  private final Command m_Xbox_swerveCommand = new SwerveDriveCommand(m_Xbox_Left_XAxis, m_Xbox_Left_YAxis, m_Xbox_Right_XAxis, m_swerveDrivetrain, m_angleChooser, m_FlapManipulatorSubsystem, m_ElevatorSubsystem);
+  private final Command m_Pilot_swerveCommand = new SwerveDriveCommand(m_Pilot_Left_XAxis, m_Pilot_Left_YAxis, m_Pilot_Right_XAxis, m_swerveDrivetrain, m_angleChooser, m_FlapManipulatorSubsystem, m_ElevatorSubsystem);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public Command scoreCones()
@@ -117,21 +118,21 @@ public class RobotContainer
   public RobotContainer() 
   {
     // Configure the button bindings
-    m_swerveDrivetrain.setDefaultCommand(m_F310_swerveCommand);
+    m_swerveDrivetrain.setDefaultCommand(m_Pilot_swerveCommand);
     m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setNEOMotorSpeed(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
-    m_F310_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
-    m_F310_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
+    m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
+    m_Pilot_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
     
-    m_F310_LeftBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1));
-    m_F310_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1));
+    m_Pilot_LeftBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1));
+    m_Pilot_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1));
 
-    m_F310_Y.whileTrue(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, true,  m_ElevatorSubsystem));
-    m_F310_Y.whileFalse(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, false, m_ElevatorSubsystem));
+    m_Pilot_Y.whileTrue(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, true,  m_ElevatorSubsystem));
+    m_Pilot_Y.whileFalse(new RunFlapManipulatorCommand(m_FlapManipulatorSubsystem, false, m_ElevatorSubsystem));
 
-    m_F310_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, m_FlapManipulatorSubsystem));
+    m_Pilot_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, m_FlapManipulatorSubsystem));
     
     /*
     m_F310_Copilot_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 0));
@@ -145,7 +146,7 @@ public class RobotContainer
 
     Command scoreCones = scoreCones();
     SmartDashboard.putData((Sendable) scoreCones);
-    m_F310_X.whileTrue(scoreCones);
+    m_Pilot_BACK.whileTrue(scoreCones);
 
     //m_F310_Y.whileTrue(strafeTest());
 
