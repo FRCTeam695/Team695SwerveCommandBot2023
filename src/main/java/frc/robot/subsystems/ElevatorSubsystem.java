@@ -47,6 +47,7 @@ public class ElevatorSubsystem extends SubsystemBase
     m_ElevatorFalcon.setSelectedSensorPosition(TargetPos,0,100);
     getPosition();
     HoldPos = true;
+    SmartDashboard.putData(this);
   }
 
   public void setSpeed(double percentVBus)
@@ -162,13 +163,13 @@ public class ElevatorSubsystem extends SubsystemBase
         }
 
         // send target speed to motor
-        m_ElevatorFalcon.set(targetSpeed);
+        setElevatorProp(targetSpeed);
 
         // delay 5 msec to not saturate CAN
         Timer.delay(0.005);
       }
 
-      m_ElevatorFalcon.set(0);
+      setElevatorProp(0);
 
     }
 
@@ -227,17 +228,24 @@ public class ElevatorSubsystem extends SubsystemBase
         }
 
         // send target speed to motor
-        m_ElevatorFalcon.set(targetSpeed);
+        setElevatorProp(targetSpeed);
 
         // delay 5 msec to not saturate CAN
         Timer.delay(0.005);
       }
 
-      m_ElevatorFalcon.set(0);
+      setElevatorProp(0);
 
     }
 
     HoldPos = true;
+
+  }
+
+  private void setElevatorProp(double prop)
+  {
+    SmartDashboard.putNumber("ElevatorMotProp", prop);
+    m_ElevatorFalcon.set(prop);
 
   }
 
@@ -257,7 +265,7 @@ public class ElevatorSubsystem extends SubsystemBase
         co = 0;
       }
       SmartDashboard.putNumber("CO", co);
-      m_ElevatorFalcon.set(co);
+      setElevatorProp(co);
     }
     else
     {
