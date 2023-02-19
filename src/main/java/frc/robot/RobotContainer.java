@@ -80,8 +80,7 @@ public class RobotContainer
   //long scorePosition;
   
   // Limelight:
-  private final NetworkTableInstance RobotMainNetworkTableInstance = NetworkTableInstance.getDefault();
-  private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem(RobotMainNetworkTableInstance, 0);
+  private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem();
 
   // Subsystems:
   private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem();
@@ -152,6 +151,8 @@ public class RobotContainer
     Command scoreCones = scoreCones();
     SmartDashboard.putData((Sendable) scoreCones);
     m_Pilot_BACK.whileTrue(scoreCones);
+
+    m_Pilot_START.whileTrue(new AlignToAprilTagCommand(m_swerveDrivetrain, m_VisionSubsystem));
 
     //m_F310_Y.whileTrue(strafeTest());
 

@@ -24,7 +24,7 @@ public class VisionSubsystem extends SubsystemBase {
   double yaw;
   double area;
 
-  public VisionSubsystem(NetworkTableInstance RobotMainNetworkTableInstance, int driverNum) 
+  public VisionSubsystem() 
   {
   }
 
@@ -52,42 +52,37 @@ public class VisionSubsystem extends SubsystemBase {
   {
     boolean ret = false;
     double tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
-    double tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-    double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
-    if(tv == 1){
-      if(ty < -5.5){
-        if(tx > -15){
-          ret = true;
-        }
-      } 
-      else {
-        if(tx > -13){
-          ret = true;
-        }
-      }
+
+    if(tv == 1)
+    {
+      ret = true;
     }
     return(ret);
   }
 
   public double getPitch()
   {
-    return(0);
+    return pitch;
   }
 
   public double getYaw()
   {
-    return(0);
+    return yaw;
   }
 
   public double getArea()
   {
-    return(0);
+    return area;
   }
 
   @Override
   public void periodic() 
   {
     SmartDashboard.putBoolean("Target", hasTarget());
+    yaw = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
+    pitch = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+    area = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
+    
       //SmartDashboard.putNumber("Pitch", getPitch());
       //SmartDashboard.putNumber("Yaw", getYaw());
       //SmartDashboard.putNumber("Area",getArea());  
