@@ -150,7 +150,7 @@ public class RobotContainer
    // m_F310_Copilot_X.whileTrue(new ManualElevatorCommand(m_ElevatorSubsystem, m_F310_Copilot_Left_YAxis));
 
     Command scoreCones = scoreCones();
-    SmartDashboard.putData((Sendable) scoreCones);
+    //SmartDashboard.putData((Sendable) scoreCones);
     m_Pilot_BACK.whileTrue(scoreCones);
 
     m_Pilot_START.whileTrue(new AlignToAprilTagCommand(m_swerveDrivetrain, m_VisionSubsystem));

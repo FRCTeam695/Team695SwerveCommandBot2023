@@ -78,7 +78,8 @@ public class VisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() 
   {
-    SmartDashboard.putBoolean("Target", hasTarget());
+    //SmartDashboard.putBoolean("Target", hasTarget());
+    hasTarget();
     yaw = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     pitch = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     area = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
