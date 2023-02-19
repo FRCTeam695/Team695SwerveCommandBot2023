@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -160,6 +161,7 @@ public class RobotContainer
     m_angleChooser.addOption("Left tarmac offset", 21.0);
     m_angleChooser.addOption("Right tarmac offset", -69.0);
     SmartDashboard.putData(m_angleChooser);
+    CameraServer.startAutomaticCapture();
   }
 
   /**
