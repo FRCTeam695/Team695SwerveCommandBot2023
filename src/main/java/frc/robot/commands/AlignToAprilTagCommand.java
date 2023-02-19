@@ -46,6 +46,9 @@ public class AlignToAprilTagCommand extends CommandBase
       }
       else if (m_VisionSubsystem.getYaw() < 13)
       {
+        initialRobotYaw = drivetrain.gyroYaw;
+        initialTicks = drivetrain.drive[0].getSelectedSensorPosition();
+        
         drivetrain.driveStrafe(0.15, initialRobotYaw, initialTicks);
       }
       else
