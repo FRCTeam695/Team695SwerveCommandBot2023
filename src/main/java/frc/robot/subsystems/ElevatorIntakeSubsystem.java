@@ -21,7 +21,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
   public ElevatorIntakeSubsystem() 
   {
     m_NEO550Motor.setIdleMode(IdleMode.kBrake);
-    SmartDashboard.putData(this);
+    //SmartDashboard.putData(this);
   }
 
   public void setNEOMotorSpeed(double speed)

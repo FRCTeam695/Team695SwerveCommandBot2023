@@ -47,7 +47,7 @@ public class ElevatorSubsystem extends SubsystemBase
     m_ElevatorFalcon.setSelectedSensorPosition(TargetPos,0,100);
     getPosition();
     HoldPos = true;
-    SmartDashboard.putData(this);
+    //SmartDashboard.putData(this);
   }
 
   public void setSpeed(double percentVBus)
@@ -244,7 +244,7 @@ public class ElevatorSubsystem extends SubsystemBase
 
   private void setElevatorProp(double prop)
   {
-    SmartDashboard.putNumber("ElevatorMotProp", prop);
+    //SmartDashboard.putNumber("ElevatorMotProp", prop);
     m_ElevatorFalcon.set(prop);
 
   }
@@ -253,7 +253,7 @@ public class ElevatorSubsystem extends SubsystemBase
   public void periodic() 
   {
     double RPM = m_ElevatorFalcon.getSelectedSensorVelocity() * 600 / 2048;
-    SmartDashboard.putNumber("RPM", RPM);
+    //SmartDashboard.putNumber("RPM", RPM);
     
     SmartDashboard.putNumber("Elevator Position", pos);
     SmartDashboard.putNumber("Elevator Level", getLevel());
@@ -264,7 +264,7 @@ public class ElevatorSubsystem extends SubsystemBase
       {
         co = 0;
       }
-      SmartDashboard.putNumber("CO", co);
+      //SmartDashboard.putNumber("CO", co);
       setElevatorProp(co);
     }
     else

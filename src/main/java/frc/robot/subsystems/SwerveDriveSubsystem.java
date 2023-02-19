@@ -156,7 +156,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
     }
     gyro.reset();
-    SmartDashboard.putData(this);
+    //SmartDashboard.putData(this);
 
     /*
     if(robotDigitalInput.get())
@@ -239,8 +239,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
     STR = STR * Math.cos(gyro_rad);
     FWD = tFWD;
 
-    SmartDashboard.putNumber("aSTR", STR);
-    SmartDashboard.putNumber("aFWD", FWD);
+    //SmartDashboard.putNumber("aSTR", STR);
+    //SmartDashboard.putNumber("aFWD", FWD);
     
     // Compute temporary work variables
     double A = nearzero(STR + RCW * (L/R));

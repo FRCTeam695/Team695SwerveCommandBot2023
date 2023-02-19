@@ -52,7 +52,7 @@ public class StrafeToTargetCommand extends CommandBase
   {
     scorePosition = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentGrid").getInteger(-1);
     ticksToStrafe = (((double)scorePosition )* 30300) + 3000;       // Conversion factor previously 26400
-    SmartDashboard.putNumber("TravelTicks", ticksToStrafe);
+    //SmartDashboard.putNumber("TravelTicks", ticksToStrafe);
 
     initialRobotYaw = drivetrain.gyroYaw;
     initialTicks = drivetrain.drive[0].getSelectedSensorPosition();
@@ -78,7 +78,7 @@ public class StrafeToTargetCommand extends CommandBase
       drivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
     }
     double ec = drivetrain.drive[0].getSelectedSensorPosition(0);
-    SmartDashboard.putNumber("xEC", ec);
+    //SmartDashboard.putNumber("xEC", ec);
   }
 
   // Returns true when the command should end.
