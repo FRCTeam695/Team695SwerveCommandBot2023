@@ -41,11 +41,11 @@ public class RobotContainer
   private final JoystickButton m_Pilot_A = new JoystickButton(m_Pilot_Controller, 1);
   private final JoystickButton m_Pilot_B = new JoystickButton(m_Pilot_Controller, 2);
   private final JoystickButton m_Pilot_X = new JoystickButton(m_Pilot_Controller, 3);
-  private final JoystickButton m_Pilot_Y = new JoystickButton(m_Pilot_Controller, 4);
+// flapper  private final JoystickButton m_Pilot_Y = new JoystickButton(m_Pilot_Controller, 4);
   private final JoystickButton m_Pilot_LeftBumper = new JoystickButton(m_Pilot_Controller, 5);
   private final JoystickButton m_Pilot_RightBumper = new JoystickButton(m_Pilot_Controller, 6);
-  private final JoystickButton m_Pilot_BACK = new JoystickButton(m_Pilot_Controller, 7);
-  private final JoystickButton m_Pilot_START = new JoystickButton(m_Pilot_Controller, 8);
+// elevator  private final JoystickButton m_Pilot_BACK = new JoystickButton(m_Pilot_Controller, 7);
+// elevator  private final JoystickButton m_Pilot_START = new JoystickButton(m_Pilot_Controller, 8);
   private final DoubleSupplier m_Pilot_Left_XAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(0), 3));
   private final DoubleSupplier m_Pilot_Left_YAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(1), 3));
   private final DoubleSupplier m_Pilot_Right_XAxis = () -> (m_Pilot_Controller.getRawAxis(4));
@@ -88,8 +88,8 @@ public class RobotContainer
   private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem = new ElevatorIntakeSubsystem();
   private final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
   // Commands:
-  private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
-  private final Command m_Pilot_swerveCommand = new SwerveDriveCommand(m_Pilot_Left_XAxis, m_Pilot_Left_YAxis, m_Pilot_Right_XAxis, m_swerveDrivetrain, m_angleChooser, m_ElevatorSubsystem);
+//  private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
+  private final Command m_Pilot_swerveCommand = new SwerveDriveCommand(m_Pilot_Left_XAxis, m_Pilot_Left_YAxis, m_Pilot_Right_XAxis, m_swerveDrivetrain, m_ElevatorSubsystem);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public Command scoreCones()
@@ -119,7 +119,7 @@ public class RobotContainer
   {
     return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
     .andThen(new WaitCommand(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, m_angleChooser, 300000, -0.15, 0));
+    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, 300000, -0.15, 0));
   }
   */
 
@@ -127,7 +127,7 @@ public class RobotContainer
   {
     // Configure the button bindings
     m_swerveDrivetrain.setDefaultCommand(m_Pilot_swerveCommand);
-    m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setNEOMotorSpeed(0);}, m_ElevatorIntakeSubsystem));
+    //m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setDirection(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
     m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
