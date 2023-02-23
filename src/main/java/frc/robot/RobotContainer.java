@@ -83,9 +83,6 @@ public class RobotContainer
   SendableChooser<Double> m_secChooser = new SendableChooser<>();
   SendableChooser<Command> m_chargeStationChooser = new SendableChooser<>();
 
-  private final DriverStation.Alliance allianceColor;
-  private final double allianceMultiplier;
-
   //long scorePosition;
   
   private final CommandScheduler scheduler = CommandScheduler.getInstance();
@@ -166,20 +163,9 @@ public class RobotContainer
 
     //m_F310_Y.whileTrue(strafeTest());
 
-    allianceColor = DriverStation.getAlliance();
-
-    if(allianceColor == DriverStation.Alliance.Red)
-    {
-      allianceMultiplier = 1;
-    }
-    else
-    {
-      allianceMultiplier = -1;
-    }
-
-    m_pathChooser.setDefaultOption("Short Exit Path", shortExitPath(allianceMultiplier));
-    m_pathChooser.addOption("Middle Exit Path", middleExitPath(allianceMultiplier));
-    m_pathChooser.addOption("Long Exit Path", longExitPath(allianceMultiplier));
+    m_pathChooser.setDefaultOption("Short Exit Path", shortExitPath());
+    m_pathChooser.addOption("Middle Exit Path", middleExitPath());
+    m_pathChooser.addOption("Long Exit Path", longExitPath());
     SmartDashboard.putData(m_pathChooser);
 
     m_secChooser.setDefaultOption("0", 0.0);
@@ -210,6 +196,23 @@ public class RobotContainer
    *
    * @return the command to run in autonomous
    */
+
+  public double getAlliance()
+  {
+    DriverStation.Alliance allianceColor;
+
+    allianceColor = DriverStation.getAlliance();
+
+    if(allianceColor == DriverStation.Alliance.Red)
+    {
+      return 1;
+    }
+    else
+    {
+      return -1;
+    }
+  }
+
   public Command getAutonomousCommand() 
   {
     Command selectedPath = m_pathChooser.getSelected();
@@ -237,7 +240,7 @@ public class RobotContainer
   double initialTicks;
   double deltaTicks;
   
-  public Command shortExitPath(double allianceMultiplier)
+  public Command shortExitPath()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
       .andThen
@@ -271,7 +274,7 @@ public class RobotContainer
         ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
         ()-> 
         {
-          m_swerveDrivetrain.driveStrafe((-0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStrafe((-0.40)*(getAlliance()), initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -288,7 +291,7 @@ public class RobotContainer
       .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
   }
 
-  public Command longExitPath(double allianceMultiplier)
+  public Command longExitPath()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
       .andThen
@@ -322,7 +325,7 @@ public class RobotContainer
         ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
         ()-> 
         {
-          m_swerveDrivetrain.driveStrafe((0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStrafe((0.40)*(getAlliance()), initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -339,7 +342,7 @@ public class RobotContainer
       .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
   }
 
-  public Command middleExitPath(double allianceMultiplier)
+  public Command middleExitPath()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
     .andThen
@@ -373,7 +376,7 @@ public class RobotContainer
       ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
       ()-> 
       {
-        m_swerveDrivetrain.driveStrafe((0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+        m_swerveDrivetrain.driveStrafe((0.40)*(getAlliance()), initialRobotYaw, initialTicks);
         deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
       },
       interrupted-> 
@@ -419,7 +422,7 @@ public class RobotContainer
       ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
       ()-> 
       {
-        m_swerveDrivetrain.driveStrafe((-0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+        m_swerveDrivetrain.driveStrafe((-0.40)*(getAlliance()), initialRobotYaw, initialTicks);
         deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
       },
       interrupted-> 
