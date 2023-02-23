@@ -72,10 +72,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Cancoder pid controllers
   public static PIDController cancoderpid[] =
   {
-    new PIDController(0.025, 0.01, 0.0001),
-    new PIDController(0.025, 0.01, 0.0001),
-    new PIDController(0.025, 0.01, 0.0001),
-    new PIDController(0.025, 0.01, 0.0001)
+    new PIDController(0.015, 0.00, 0.0001),
+    new PIDController(0.015, 0.00, 0.0001),
+    new PIDController(0.015, 0.00, 0.0001),
+    new PIDController(0.015, 0.00, 0.0001)
   };
 
   // Talon encoder pid controllers (TODO:  move these directly into the falcon 500's)
