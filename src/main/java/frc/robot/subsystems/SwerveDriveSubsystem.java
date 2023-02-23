@@ -508,6 +508,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
     gyroYaw = gyro.getYaw();
     SmartDashboard.putNumber("Yaw", gyroYaw);
 
+    SmartDashboard.putNumber("PITCH", gyro.getPitch());
     for(int lp=0; lp<4; lp++)
   {
       SmartDashboard.putNumber(lp +"-" + cancoderoffset[lp], cancoder[lp].getAbsolutePosition());

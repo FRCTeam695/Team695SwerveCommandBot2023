@@ -13,6 +13,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
@@ -22,6 +23,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -76,10 +79,16 @@ public class RobotContainer
   private final DoubleSupplier m_Xbox_Right_XAxis = () -> (m_Xbox.getRawAxis(4));
   */
 
-  SendableChooser<Double> m_angleChooser = new SendableChooser<>();
-  
+  SendableChooser<Command> m_pathChooser = new SendableChooser<>();
+  SendableChooser<Double> m_secChooser = new SendableChooser<>();
+  SendableChooser<Command> m_chargeStationChooser = new SendableChooser<>();
+
+  private final DriverStation.Alliance allianceColor;
+  private final double allianceMultiplier;
+
   //long scorePosition;
   
+  private final CommandScheduler scheduler = CommandScheduler.getInstance();
   // Limelight:
   private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem();
 
@@ -138,7 +147,7 @@ public class RobotContainer
     m_Pilot_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1));
 
     m_Pilot_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem));
-    
+
     /*
     m_F310_Copilot_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 0));
     m_F310_Copilot_START.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 1));
@@ -149,18 +158,42 @@ public class RobotContainer
 
    // m_F310_Copilot_X.whileTrue(new ManualElevatorCommand(m_ElevatorSubsystem, m_F310_Copilot_Left_YAxis));
 
-    Command scoreCones = scoreCones();
+//    Command scoreCones = scoreCones();
     //SmartDashboard.putData((Sendable) scoreCones);
-    m_Pilot_BACK.whileTrue(scoreCones);
+//    m_Pilot_BACK.whileTrue(scoreCones);
 
-    m_Pilot_START.whileTrue(new AlignToAprilTagCommand(m_swerveDrivetrain, m_VisionSubsystem));
+//    m_Pilot_START.whileTrue(new AlignToAprilTagCommand(m_swerveDrivetrain, m_VisionSubsystem));
 
     //m_F310_Y.whileTrue(strafeTest());
 
-    m_angleChooser.setDefaultOption("No tarmac offset", 0.0);
-    m_angleChooser.addOption("Left tarmac offset", 21.0);
-    m_angleChooser.addOption("Right tarmac offset", -69.0);
-    SmartDashboard.putData(m_angleChooser);
+    allianceColor = DriverStation.getAlliance();
+
+    if(allianceColor == DriverStation.Alliance.Red)
+    {
+      allianceMultiplier = 1;
+    }
+    else
+    {
+      allianceMultiplier = -1;
+    }
+
+    m_pathChooser.setDefaultOption("Short Exit Path", shortExitPath(allianceMultiplier));
+    m_pathChooser.addOption("Middle Exit Path", middleExitPath(allianceMultiplier));
+    m_pathChooser.addOption("Long Exit Path", longExitPath(allianceMultiplier));
+    SmartDashboard.putData(m_pathChooser);
+
+    m_secChooser.setDefaultOption("0", 0.0);
+    m_secChooser.addOption("1", 1.0);
+    m_secChooser.addOption("2", 2.0);
+    m_secChooser.addOption("3", 3.0);
+    m_secChooser.addOption("4", 4.0);
+    m_secChooser.addOption("5", 5.0);
+    SmartDashboard.putData(m_secChooser);
+
+    m_chargeStationChooser.setDefaultOption("Do Not Engage Station", doNothing());
+    m_chargeStationChooser.addOption("Engage Station", dynamicEngageChargeStation());
+    SmartDashboard.putData(m_chargeStationChooser);
+
     CameraServer.startAutomaticCapture();
   }
 
@@ -179,7 +212,274 @@ public class RobotContainer
    */
   public Command getAutonomousCommand() 
   {
-    // An ExampleCommand will run in autonomous
-    return m_autoCommand;
+    Command selectedPath = m_pathChooser.getSelected();
+    Command chargeStation = m_chargeStationChooser.getSelected();
+
+    scheduler.removeComposedCommand(selectedPath);
+    scheduler.removeComposedCommand(chargeStation);
+
+    return new WaitCommand(m_secChooser.getSelected())
+    .andThen(scorePreload())
+    .andThen(selectedPath)
+    .andThen(chargeStation);
+  }
+
+  public Command scorePreload()
+  {
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
+      .andThen(new WaitCommand(1.5))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1.5))
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
+  }
+
+  double initialRobotYaw;
+  double initialTicks;
+  double deltaTicks;
+  
+  public Command shortExitPath(double allianceMultiplier)
+  {
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 200000,    //275000
+          m_swerveDrivetrain)
+      )
+      .andThen(new WaitCommand(0.1))
+      .andThen
+      (
+        new FunctionalCommand(
+        ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
+        ()-> 
+        {
+          m_swerveDrivetrain.driveStrafe((-0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+          deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+        },
+        ()-> deltaTicks >= 80000,    //121000
+        m_swerveDrivetrain)
+      )
+      .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
+  }
+
+  public Command longExitPath(double allianceMultiplier)
+  {
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 200000,    //275000
+          m_swerveDrivetrain)
+      )
+      .andThen(new WaitCommand(0.1))
+      .andThen
+      (
+        new FunctionalCommand(
+        ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
+        ()-> 
+        {
+          m_swerveDrivetrain.driveStrafe((0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+          deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+        },
+        ()-> deltaTicks >= 80000,    //121000
+        m_swerveDrivetrain)
+      )
+      .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
+  }
+
+  public Command middleExitPath(double allianceMultiplier)
+  {
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+    .andThen
+    (
+      new FunctionalCommand( 
+        ()-> 
+        {
+          initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+          initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+        },
+        ()-> 
+        {
+          m_swerveDrivetrain.driveStraight(0.08, initialRobotYaw, initialTicks);
+          deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+        },
+        ()-> deltaTicks >= 5000,
+        m_swerveDrivetrain)
+    )
+    .andThen(new WaitCommand(0.1))
+    .andThen
+    (
+      new FunctionalCommand(
+      ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
+      ()-> 
+      {
+        m_swerveDrivetrain.driveStrafe((0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+        deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+      },
+      interrupted-> 
+      {
+        for(int lp=0; lp<4; lp++)
+        {
+          m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+          m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+        }
+      },
+      ()-> deltaTicks >= 90900,
+      m_swerveDrivetrain)
+    )
+    .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();})
+    .andThen
+    (
+      new FunctionalCommand( 
+        ()-> 
+        {
+          initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+          initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+        },
+        ()-> 
+        {
+          m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+          deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+        },
+        ()-> deltaTicks >= 200000,    //275000
+        m_swerveDrivetrain)
+    )
+    .andThen(new WaitCommand(0.1))
+    .andThen
+    (
+      new FunctionalCommand(
+      ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
+      ()-> 
+      {
+        m_swerveDrivetrain.driveStrafe((-0.40)*allianceMultiplier, initialRobotYaw, initialTicks);
+        deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+      },
+      interrupted-> 
+      {
+        for(int lp=0; lp<4; lp++)
+        {
+          m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+          m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+        }
+      },
+      ()-> deltaTicks >= 80000,    //121000
+      m_swerveDrivetrain)
+    )
+    .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
+  }
+
+  public Command doNothing()
+  {
+    return new WaitCommand(0.001);
+  }
+
+  double initialRobotPitch;
+  boolean hasStartedAscent = false;
+  double deltaPitch;
+  double chargeStationState = 0;
+  // Using gyro roll
+  public Command dynamicEngageChargeStation()
+  {
+    SmartDashboard.putNumber("Charge Station State", chargeStationState);
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+    .andThen
+    (
+      new FunctionalCommand
+      (
+        ()->           
+        {
+          chargeStationState = 1;
+          initialRobotPitch =  m_swerveDrivetrain.gyro.getPitch();
+        },
+        ()->
+        {
+          m_swerveDrivetrain.driveStraight(-0.4, initialRobotYaw, initialTicks);
+          deltaPitch = Math.abs(initialRobotPitch - m_swerveDrivetrain.gyro.getPitch());
+          if(deltaPitch > 21)
+          {
+            hasStartedAscent = true;
+            chargeStationState = 2;
+          }
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+          chargeStationState = 3;
+        },
+        ()-> hasStartedAscent == true && deltaPitch <= 14,
+        m_swerveDrivetrain)
+    );
   }
 }
