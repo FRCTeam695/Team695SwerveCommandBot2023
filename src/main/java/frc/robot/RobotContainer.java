@@ -451,7 +451,6 @@ public class RobotContainer
   // Using gyro roll
   public Command dynamicEngageChargeStation()
   {
-    SmartDashboard.putNumber("Charge Station State", chargeStationState);
     return new InstantCommand(()-> {new WaitCommand(0.001);})
     .andThen
     (
@@ -461,6 +460,7 @@ public class RobotContainer
         {
           chargeStationState = 1;
           initialRobotPitch =  m_swerveDrivetrain.gyro.getPitch();
+          SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         ()->
         {
@@ -471,6 +471,7 @@ public class RobotContainer
             hasStartedAscent = true;
             chargeStationState = 2;
           }
+          SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         interrupted-> 
         {
@@ -480,6 +481,7 @@ public class RobotContainer
             m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
           }
           chargeStationState = 3;
+          SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         ()-> hasStartedAscent == true && deltaPitch <= 14,
         m_swerveDrivetrain)
