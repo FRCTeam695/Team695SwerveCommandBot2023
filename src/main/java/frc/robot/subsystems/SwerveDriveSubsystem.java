@@ -115,6 +115,21 @@ public class SwerveDriveSubsystem extends SubsystemBase
     System.out.println("End CancoderHome()");
   }
 
+  // Cancoder homing method
+  // CancoderHome() reads the candoder positions and sets the falcon encoders accordingly
+  public static void CancoderHomeJPK()
+  {
+    System.out.println("Begin CancoderHome()");
+    for(int lp=0; lp<4; lp++)
+    {
+      talonpid[lp].reset();
+      double x = (cancoder[lp].getAbsolutePosition() - 180 - cancoderoffset[lp]) / 180 * (Constants.talon_mk4i_360_count / 2);
+      System.out.println(lp + " : " + x + " : " + steer[lp].getSelectedSensorPosition(0));
+      steer[lp].setSelectedSensorPosition(0, 0, (lp == 3) ? 100 : 0);
+    }
+    System.out.println("End CancoderHome()");
+  }
+
   public SwerveDriveSubsystem() 
   {
     gyro.calibrate();
