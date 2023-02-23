@@ -26,13 +26,13 @@ public class ManualElevatorCommand extends CommandBase {
   @Override
   public void execute() {
     double sendSpeed = m_speed.getAsDouble();
-    m_ElevatorSubsystem.setSpeed(-sendSpeed);
+//    m_ElevatorSubsystem.setSpeed(-sendSpeed);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_ElevatorSubsystem.setSpeed(0);
+//    m_ElevatorSubsystem.setSpeed(0);
 
   }
 
