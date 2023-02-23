@@ -22,17 +22,20 @@ public class ElevatorSubsystem extends SubsystemBase
   private double TargetPos;
   private PIDController HoldPID = new PIDController(0.005, 0.001, 0);
   
+  private int currentLevel;
+  private int newLevel;
+
   private double pos;
 
-  // TODO:  set these level tick counts based on grid scoring posotions:
-  private double[] levelTicks = {0, 10000, 60000, 80000};
+  private double[] levelTicks = {0, 10000, 54000, 80000, 86000};
+
+  private Timer et = new Timer();
 
   public ElevatorSubsystem() 
   {
-//    m_ElevatorFalcon.setNeutralMode(NeutralMode.Brake);
     m_ElevatorFalcon.setNeutralMode(NeutralMode.Coast);
 
-    m_ElevatorFalcon.configForwardSoftLimitThreshold(levelTicks[3]);
+    m_ElevatorFalcon.configForwardSoftLimitThreshold(levelTicks[4]);
     m_ElevatorFalcon.configForwardSoftLimitEnable(true);
     m_ElevatorFalcon.configReverseSoftLimitThreshold(levelTicks[0]);
     m_ElevatorFalcon.configReverseSoftLimitEnable(true);
@@ -47,13 +50,6 @@ public class ElevatorSubsystem extends SubsystemBase
     m_ElevatorFalcon.setSelectedSensorPosition(TargetPos,0,100);
     getPosition();
     HoldPos = true;
-    //SmartDashboard.putData(this);
-  }
-
-  public void setSpeed(double percentVBus)
-  {
-    HoldPos = false;
-    m_ElevatorFalcon.set(percentVBus);
   }
 
   public double getPosition()
@@ -72,33 +68,26 @@ public class ElevatorSubsystem extends SubsystemBase
       {
         return(i);
       }
-      /*
-      if (levelTicks[i]+1000>= pos && pos >= levelTicks[i]-1000)
-      {
-        return(i);
-      }
-      */
     }
     return(0);
   }
 
   public void runToLevel(int newLevel)
   {
-    double maxTime = 2.0;     // maximum seconds to allow run
-    double minSpeed = 0.2;    // start speed
-    double maxSpeed = 0.6;   // plateau speed
-    double plateauStart;      // threshold tick count when ramp up is complete
-    double plateauEnd;        // threshold tick count to begin ramp down
-    double targetSpeed;
-    double ticks;
-
-    int currentLevel = getLevel();
-
+    
     // check for reset
     if (newLevel == -1)
     {
       m_ElevatorFalcon.setSelectedSensorPosition(0,0,100);
       return;
+    }
+
+    currentLevel = getLevel();
+
+    // JPK - just toggle elevator movement between current level and ground floor
+    if (currentLevel > 0)
+    {
+      newLevel = 0;
     }
 
     // if already at this level, do nothing
@@ -107,69 +96,107 @@ public class ElevatorSubsystem extends SubsystemBase
       return;
     }
 
+    // kickoff elevator move in periodic callback
+    this.newLevel = newLevel;
     HoldPos = false;
     TargetPos = levelTicks[newLevel];
+    et.reset();
+    et.start();
 
-    // going up?
+    System.out.println("going to level " + newLevel + " : " + TargetPos);
+  }
+
+  public boolean elevatorActive()
+  {
+    if (pos >= 1000)
+    {
+      return(true);
+    }
+    return(false);
+  }
+
+  @Override
+  public void periodic() 
+  {
+    double maxTime = 3.0;     // maximum seconds to allow run
+    double minSpeed = 0.2;    // start speed
+    double maxSpeed = 1;      // plateau speed
+    double plateauStart;      // threshold tick count when ramp up is complete
+    double plateauEnd;        // threshold tick count to begin ramp down
+    double targetSpeed;
+    double ticks;
+
+    SmartDashboard.putNumber("Elevator Position", pos);
+    SmartDashboard.putNumber("Elevator Level", getLevel());
+
+    if (HoldPos == true)
+    {
+      double co = MathUtil.clamp(HoldPID.calculate(getPosition(), TargetPos), -0.08, 0.08);
+      if(pos < 1000)
+      {
+        co = 0;
+      }
+      m_ElevatorFalcon.set(co);
+      return;
+    }
+
+    HoldPID.reset();
+    if (newLevel == currentLevel)
+    {
+      return;
+    }
+
+    // check for move timeout
+    if (et.get() >= maxTime)
+    {
+      HoldPos = true;
+      return;
+    }
+
     if (newLevel > currentLevel)
     {
 
       // compute trapezoid inflection points
-    //  plateauStart = levelTicks[currentLevel] + 0.2 * (levelTicks[newLevel] - levelTicks[currentLevel]);
-  //   plateauEnd = levelTicks[currentLevel] + 0.8 * (levelTicks[newLevel] - levelTicks[currentLevel]);
       plateauStart = levelTicks[currentLevel] + 6000;
-      plateauEnd = levelTicks[newLevel]-6000;
-      // create a timer to enforce maxTime
-      Timer et = new Timer();
-      et.reset();
-      et.start();
+      plateauEnd = levelTicks[newLevel];
+        
+      // get current encoder position
+      ticks = getPosition();
 
-      // loop to run until maxTime
-      while(et.get() < maxTime)
+      // if at the new level, exit
+      if (ticks >= levelTicks[newLevel])
       {
-
-        // get current encoder position
-        ticks = getPosition();
-
-        // if at the new level, exit
-        if (ticks >= levelTicks[newLevel])
-        {
-          currentLevel = newLevel;
-          break;
-        }
-
-        // before plateau speed ramp up
-        if (ticks < plateauStart)
-        {
-          targetSpeed = maxSpeed * (ticks - levelTicks[currentLevel]) / (plateauStart - levelTicks[currentLevel]);
-        }
-
-        // at plateau speed constant at max
-        else if (ticks < plateauEnd)
-        {
-          targetSpeed = maxSpeed;
-        }
-
-        // after plateau speed ramp down
-        else
-        {
-          targetSpeed = maxSpeed - maxSpeed * (ticks - plateauEnd) / (levelTicks[newLevel] - plateauEnd);
-        }
-
-        // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
-        if (targetSpeed < minSpeed)
-        {
-          targetSpeed = minSpeed;
-        }
-
-        // send target speed to motor
-        setElevatorProp(targetSpeed);
-
-        // delay 5 msec to not saturate CAN
-        Timer.delay(0.005);
+        currentLevel = newLevel;
+        HoldPos = true;
+        return;
       }
 
-      setElevatorProp(0);
+      // before plateau speed ramp up
+      if (ticks < plateauStart)
+      {
+        targetSpeed = maxSpeed * (ticks - levelTicks[currentLevel]) / (plateauStart - levelTicks[currentLevel]);
+      }
+
+      // at plateau speed constant at max
+      else if (ticks < plateauEnd)
+      {
+        targetSpeed = maxSpeed;
+      }
+
+      // after plateau speed ramp down
+      else
+      {
+        targetSpeed = maxSpeed - maxSpeed * (ticks - plateauEnd) / (levelTicks[newLevel] - plateauEnd);
+      }
+
+      // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
+      if (targetSpeed < minSpeed)
+      {
+        targetSpeed = minSpeed;
+      }
+
+      // send target speed to motor
+      m_ElevatorFalcon.set(targetSpeed);
 
     }
 
@@ -179,98 +206,50 @@ public class ElevatorSubsystem extends SubsystemBase
       maxSpeed /= 2;
 
       // compute trapezoid inflection points
-    //  plateauStart = levelTicks[currentLevel] - 0.2 * (levelTicks[currentLevel] - levelTicks[newLevel]);
-    //  plateauEnd = levelTicks[currentLevel] - 0.8 * (levelTicks[currentLevel] - levelTicks[newLevel]);
       plateauStart = levelTicks[currentLevel] - 6000;
       plateauEnd = levelTicks[newLevel]+6000;
-  
-      // create a timer to enforce maxTime
-      Timer et = new Timer();
-      et.reset();
-      et.start();
 
-      // loop to run until maxTime
-      while(et.get() < maxTime)
+      // get current encoder position
+      ticks = getPosition();
+
+      // if at the new level, exit
+      if (ticks <= levelTicks[newLevel])
       {
-
-        // get current encoder position
-        ticks = getPosition();
-
-        // if at the new level, exit
-        if (ticks <= levelTicks[newLevel])
-        {
-          currentLevel = newLevel;
-          break;
-        }
-
-        // before plateau speed ramp up
-        if (ticks > plateauStart)
-        {
-          targetSpeed = -(maxSpeed * (ticks - levelTicks[currentLevel]) / (plateauStart - levelTicks[currentLevel]));
-        }
-
-        // at plateau speed constant at max
-        else if (ticks > plateauEnd)
-        {
-          targetSpeed = -maxSpeed;
-        }
-
-        // after plateau speed ramp down
-        else
-        {
-          targetSpeed = -(maxSpeed - maxSpeed * (ticks - plateauEnd) / (levelTicks[newLevel] - plateauEnd));
-        }
-
-        // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
-        if (targetSpeed > -minSpeed)
-        {
-          targetSpeed = -minSpeed;
-        }
-
-        // send target speed to motor
-        setElevatorProp(targetSpeed);
-
-        // delay 5 msec to not saturate CAN
-        Timer.delay(0.005);
+        currentLevel = newLevel;
+        HoldPos = true;
+        return;
       }
 
-      setElevatorProp(0);
-
-    }
-
-    HoldPos = true;
-
-  }
-
-  private void setElevatorProp(double prop)
-  {
-    //SmartDashboard.putNumber("ElevatorMotProp", prop);
-    m_ElevatorFalcon.set(prop);
-
-  }
-
-  @Override
-  public void periodic() 
-  {
-    double RPM = m_ElevatorFalcon.getSelectedSensorVelocity() * 600 / 2048;
-    //SmartDashboard.putNumber("RPM", RPM);
-    
-    SmartDashboard.putNumber("Elevator Position", pos);
-    SmartDashboard.putNumber("Elevator Level", getLevel());
-    if (HoldPos == true)
-    {
-      double co = MathUtil.clamp(HoldPID.calculate(getPosition(), TargetPos), -0.08, 0.08);
-      if(pos < 500)
+      // before plateau speed ramp up
+      if (ticks > plateauStart)
       {
-        co = 0;
+        targetSpeed = -(maxSpeed * (ticks - levelTicks[currentLevel]) / (plateauStart - levelTicks[currentLevel]));
       }
-      //SmartDashboard.putNumber("CO", co);
-      setElevatorProp(co);
+
+      // at plateau speed constant at max
+      else if (ticks > plateauEnd)
+      {
+        targetSpeed = -maxSpeed;
+      }
+
+      // after plateau speed ramp down
+      else
+      {
+        targetSpeed = -(maxSpeed - maxSpeed * (ticks - plateauEnd) / (levelTicks[newLevel] - plateauEnd));
+      }
+
+      // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
+      if (targetSpeed > -minSpeed)
+      {
+        targetSpeed = -minSpeed;
+      }
+
+      // send target speed to motor
+      m_ElevatorFalcon.set(targetSpeed);
+
     }
-    else
-    {
-      HoldPID.reset();
-    }
+
   }
 
 }
+

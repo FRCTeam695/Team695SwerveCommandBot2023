@@ -23,17 +23,17 @@ public class SwerveDriveCommand extends CommandBase
   private final DoubleSupplier YjSupplier;
   private final DoubleSupplier ZjSupplier;
   private final SwerveDriveSubsystem drivetrain;
-  private final ElevatorSubsystem m_ElevatorSubsystem;
+  private final ElevatorSubsystem elevator;
 
-  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, ElevatorSubsystem elevatorSubsystem) 
+  public SwerveDriveCommand(DoubleSupplier XjSupplier, DoubleSupplier YjSupplier, DoubleSupplier ZjSupplier, SwerveDriveSubsystem drivetrain, ElevatorSubsystem elevator) 
   {
     this.XjSupplier = XjSupplier;
     this.YjSupplier = YjSupplier;
     this.ZjSupplier = ZjSupplier;
     this.drivetrain = drivetrain;
-    this.m_ElevatorSubsystem = elevatorSubsystem;
+    this.elevator = elevator;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(drivetrain, elevatorSubsystem);
+    addRequirements(drivetrain);
   }
 
   // Called when the command is initially scheduled.
@@ -49,7 +49,7 @@ public class SwerveDriveCommand extends CommandBase
     double Yj = YjSupplier.getAsDouble();
     double Zj = ZjSupplier.getAsDouble();
 
-    if(m_ElevatorSubsystem.getLevel() >= 2)
+    if(elevator.elevatorActive())
     {
       Xj = 0.2 * Xj;
       Yj = 0.2 * Yj;
@@ -83,7 +83,7 @@ public class SwerveDriveCommand extends CommandBase
     // Limit rotate to 20% motor
     RCW /= 3;
 
-    if(m_ElevatorSubsystem.getLevel() >= 2)
+    if(elevator.elevatorActive())
     {
       RCW *=3;
     }
