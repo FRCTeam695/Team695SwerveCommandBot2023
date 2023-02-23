@@ -233,7 +233,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
     double FWD = 0;
     
     // adjust for field oriented drive
-    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
     double gyro_rad = gyroYaw / 180 * Math.PI;
     double tFWD = STR * Math.sin(gyro_rad);
     STR = STR * Math.cos(gyro_rad);
@@ -389,7 +388,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
     double STR = 0;
 
     // adjust for field oriented drive
-    //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
     double gyro_rad = gyroYaw / 180 * Math.PI;
     double tFWD = FWD * Math.cos(gyro_rad);
     STR = -FWD * Math.sin(gyro_rad);
