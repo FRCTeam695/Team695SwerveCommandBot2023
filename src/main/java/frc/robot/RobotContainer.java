@@ -376,7 +376,7 @@ public class RobotContainer
       ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
       ()-> 
       {
-        m_swerveDrivetrain.driveStrafe((0.40)*(getAlliance()), initialRobotYaw, initialTicks);
+        m_swerveDrivetrain.driveStrafe((0.20)*(getAlliance()), initialRobotYaw, initialTicks);
         deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
       },
       interrupted-> 
@@ -387,7 +387,7 @@ public class RobotContainer
           m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
         }
       },
-      ()-> deltaTicks >= 90900,
+      ()-> deltaTicks >= 75000,
       m_swerveDrivetrain)
     )
     .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();})
