@@ -24,7 +24,6 @@ public class StrafeToTargetCommand extends CommandBase
 {
   private final SwerveDriveSubsystem drivetrain;
   private final VisionSubsystem visionSubsystem;
-  private final SendableChooser<Double> m_angleChooser;
   //private final double ticksToStrafe;
   private final double strafeSpeed;
   private final double adjustmentTicks;
@@ -34,11 +33,10 @@ public class StrafeToTargetCommand extends CommandBase
   long scorePosition;
   double ticksToStrafe;
   
-  public StrafeToTargetCommand(SwerveDriveSubsystem drivetrain, VisionSubsystem visionSubsystem, SendableChooser<Double> angleChooser, double strafeSpeed, double adjustmentTicks) 
+  public StrafeToTargetCommand(SwerveDriveSubsystem drivetrain, VisionSubsystem visionSubsystem, double strafeSpeed, double adjustmentTicks) 
   {
     this.drivetrain = drivetrain;
     this.visionSubsystem = visionSubsystem;
-    this.m_angleChooser = angleChooser;
     //this.ticksToStrafe = ticksToStrafe;
     this.strafeSpeed = strafeSpeed;
     this.adjustmentTicks = adjustmentTicks;

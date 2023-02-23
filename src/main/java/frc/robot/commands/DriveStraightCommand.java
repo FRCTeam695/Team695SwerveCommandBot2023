@@ -15,7 +15,6 @@ import frc.robot.subsystems.SwerveDriveSubsystem;
 public class DriveStraightCommand extends CommandBase 
 {
   private final SwerveDriveSubsystem drivetrain;
-  private final SendableChooser<Double> m_angleChooser;
   private final double driveSpeed;
   private final double ticksToDrive;
 
@@ -23,10 +22,9 @@ public class DriveStraightCommand extends CommandBase
   double initialRobotYaw;
 
   /** Creates a new DriveStraightCommand. */
-  public DriveStraightCommand(SwerveDriveSubsystem drivetrain, SendableChooser<Double> angleChooser, double ticksToDrive, double driveSpeed) 
+  public DriveStraightCommand(SwerveDriveSubsystem drivetrain, double ticksToDrive, double driveSpeed) 
   {
     this.drivetrain = drivetrain;
-    this.m_angleChooser = angleChooser;
     this.driveSpeed = driveSpeed;
     this.ticksToDrive = ticksToDrive;
     // Use addRequirements() here to declare subsystem dependencies.
