@@ -10,37 +10,48 @@ import frc.robot.subsystems.ElevatorIntakeSubsystem;
 public class RunElevatorIntakeCommand extends CommandBase 
 {
   private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem;
-  double speed;
+  double direction;
 
-  public RunElevatorIntakeCommand(ElevatorIntakeSubsystem elevatorIntakeSubsystem, double speed) 
+  public RunElevatorIntakeCommand(ElevatorIntakeSubsystem elevatorIntakeSubsystem, double direction) 
   {
     this.m_ElevatorIntakeSubsystem = elevatorIntakeSubsystem;
-    this.speed = speed;
+    this.direction = direction;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_ElevatorIntakeSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize()
+  {
+    m_ElevatorIntakeSubsystem.runInit(direction);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() 
   {
-    m_ElevatorIntakeSubsystem.setNEOMotorSpeed(speed);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) 
   {
-    m_ElevatorIntakeSubsystem.setNEOMotorSpeed(0);
+    // only explicitly stop if running out (running in is a toggle on/off)
+    if (direction == 1)
+    {
+      m_ElevatorIntakeSubsystem.stop();
+    }
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // running in is a toggle, so set to immediately exit
+    if (direction == -1)
+    {
+      return(true);
+    }
     return false;
   }
 }

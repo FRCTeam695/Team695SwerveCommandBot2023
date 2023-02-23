@@ -134,7 +134,7 @@ public class RobotContainer
     m_Pilot_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
     
-    m_Pilot_LeftBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1));
+    m_Pilot_LeftBumper.onTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1));
     m_Pilot_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1));
 
     m_Pilot_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem));
