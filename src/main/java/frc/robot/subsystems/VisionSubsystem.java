@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import javax.lang.model.util.ElementScanner14;
+
 //import org.photonvision.PhotonCamera;
 //import org.photonvision.targeting.PhotonPipelineResult;
 //import org.photonvision.targeting.PhotonTrackedTarget;
@@ -78,16 +80,24 @@ public class VisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() 
   {
-    //SmartDashboard.putBoolean("Target", hasTarget());
-    hasTarget();
-    yaw = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-    pitch = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
-    area = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
+    if (hasTarget() == true)
+    {
+      yaw = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
+      pitch = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+      area = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
     
-      //SmartDashboard.putNumber("Pitch", getPitch());
-      //SmartDashboard.putNumber("Yaw", getYaw());
-      //SmartDashboard.putNumber("Area",getArea());  
-      //periodicHasTarget = hasTarget(); 
-      //periodicYaw = getYaw();
+    }
+    else
+    {
+      yaw = 0;
+      pitch = 0;
+      area = 0;
+    }
+
+    SmartDashboard.putBoolean("LT", hasTarget());
+    SmartDashboard.putNumber("LTPitch", pitch);
+    SmartDashboard.putNumber("LTYaw", yaw);
+    SmartDashboard.putNumber("LTArea",area);  
+
   }
 }
