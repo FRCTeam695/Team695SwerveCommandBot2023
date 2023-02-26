@@ -82,10 +82,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Talon encoder pid controllers (TODO:  move these directly into the falcon 500's)
   public static PIDController talonpid[] =
   {
-    new PIDController(0.01, 0.00, 0),
-    new PIDController(0.01, 0.00, 0),
-    new PIDController(0.01, 0.00, 0),
-    new PIDController(0.01, 0.00, 0)
+    new PIDController(0.015, 0.0, 0.0),
+    new PIDController(0.015, 0.0, 0.0),
+    new PIDController(0.015, 0.0, 0.0),
+    new PIDController(0.015, 0.0, 0.0)
   };
 
   public double nearzero(double val)
@@ -96,7 +96,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
   // Cancoder homing method
   // CancoderHome() takes 1 second to home the swerve steer wheels using the cancoders
-  public static void CancoderHome()
+  public static void CancoderHomeOld()
   {
     System.out.println("Begin CancoderHome()");
     for(int t=0; t<100; t++)
@@ -118,15 +118,16 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
   // Cancoder homing method
   // CancoderHome() reads the candoder positions and sets the falcon encoders accordingly
-  public static void CancoderHomeJPK()
+  public static void CancoderHome()
   {
+    double x;
     System.out.println("Begin CancoderHome()");
     for(int lp=0; lp<4; lp++)
     {
       talonpid[lp].reset();
-      double x = (cancoder[lp].getAbsolutePosition() - 180 - cancoderoffset[lp]) / 180 * (Constants.talon_mk4i_360_count / 2);
-      System.out.println(lp + " : " + x + " : " + steer[lp].getSelectedSensorPosition(0));
-      steer[lp].setSelectedSensorPosition(0, 0, (lp == 3) ? 100 : 0);
+      x = (cancoder[lp].getAbsolutePosition() - cancoderoffset[lp]) / 180 * (Constants.talon_mk4i_360_count / 2);
+      steer[lp].setSelectedSensorPosition(-1 * x, 0, 100);
+      x = steer[lp].getSelectedSensorPosition(0);
     }
     System.out.println("End CancoderHome()");
   }
