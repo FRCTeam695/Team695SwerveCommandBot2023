@@ -234,9 +234,12 @@ public class RobotContainer
   public Command scorePreload()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
+      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1))
+      .andThen(new WaitCommand(1))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
-      .andThen(new WaitCommand(1.5))
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1.5))
+      .andThen(new WaitCommand(2))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
   }
 
