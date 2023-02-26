@@ -33,9 +33,8 @@ public class LEDSubsystem extends SubsystemBase
     {
       for(int i = 0; i < m_LEDBuffer.getLength(); i++)
       {
-        m_LEDBuffer.setRGB(i, 127, 0, 255);
+        m_LEDBuffer.setRGB(i, 128, 0, 128);
       }
-
       color = newColor;
     }
     else if(newColor.equals("Yellow"))
@@ -44,7 +43,14 @@ public class LEDSubsystem extends SubsystemBase
       {  
         m_LEDBuffer.setRGB(i, 255, 255, 0);
       }
-
+      color = newColor;
+    }
+    else if(newColor.equals("Green"))
+    {
+      for(int i = 0; i < m_LEDBuffer.getLength(); i++)
+      {  
+        m_LEDBuffer.setRGB(i, 0, 255, 0);
+      }
       color = newColor;
     }
     else if(newColor.equals("Off"))
@@ -53,7 +59,6 @@ public class LEDSubsystem extends SubsystemBase
       {
         m_LEDBuffer.setRGB(i, 0, 0, 0);
       }
-
       color = newColor;
     }
 
@@ -65,6 +70,12 @@ public class LEDSubsystem extends SubsystemBase
   public void periodic() 
   {
     long currentIntakeMode = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentIntakeMode").getInteger(-1);
+
+    if (NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("stalled").getInteger(-1) == 1)
+    {
+      setColor("Green");
+      return;
+    }
 
     if(currentIntakeMode == 1)
     {

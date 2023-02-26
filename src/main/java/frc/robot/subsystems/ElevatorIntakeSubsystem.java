@@ -31,22 +31,23 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     m_encoder.setPosition(0);
     stallhold = false;
     running = false;
+    NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(0);
   }
 
   // direction:  -1=in, 1=out
   public void runInit(double direction)
   {
-
     // if in request and already running or stalled, stop motor
     if (direction == -1)
     {
 
       if ((running == true) || (stallhold == true))
       {
-        runspeed = 0;
-        stallhold = false;
         running = false;
+        runspeed = 0;
         m_intake.set(runspeed);
+        stallhold = false;
+        NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(0);
         return;
       }
     }
@@ -57,6 +58,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
       runspeed = 0;
       m_intake.set(runspeed);
       stallhold = false;
+      NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(0);
     }
 
     // read current encoder for stall detection
@@ -131,9 +133,9 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
         currentposition = m_encoder.getPosition();
         if (Math.abs(currentposition - lastposition) < 3)
         {
-          System.out.println("STALL!!!!!!!!!!!");
           m_intake.setSmartCurrentLimit(3);
           stallhold = true;
+          NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(1);
         }
         else
         {
