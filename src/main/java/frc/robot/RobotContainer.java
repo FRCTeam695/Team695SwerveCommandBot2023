@@ -496,7 +496,7 @@ public class RobotContainer
           m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
         }
       },
-      ()-> deltaTicks >= 75000,
+      ()-> deltaTicks >= 95000,
       m_swerveDrivetrain)
     )
     .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();})
