@@ -557,6 +557,8 @@ public class RobotContainer
   boolean hasStartedAscent = false;
   double deltaPitch;
   double chargeStationState = 0;
+  double averagePitch;
+  double[] pitchArray = new double[5];
   // Using gyro roll
   public Command dynamicEngageChargeStation()
   {
@@ -572,14 +574,42 @@ public class RobotContainer
           SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         ()->
-        {
-          m_swerveDrivetrain.driveStraight(-0.4, initialRobotYaw, initialTicks);
-          deltaPitch = Math.abs(initialRobotPitch - m_swerveDrivetrain.gyro.getPitch());
-          if(deltaPitch > 21)
+        {          
+          for(int i = 3; i >= 0; i--)
           {
-            hasStartedAscent = true;
-            chargeStationState = 2;
+            pitchArray[i+1] = pitchArray[i];
           }
+
+          pitchArray[0] = m_swerveDrivetrain.gyro.getPitch();
+
+          double total = 0;
+
+          for(int i=0; i < pitchArray.length; i++)
+          {
+            total = total + pitchArray[i];
+          }
+
+          averagePitch = total / pitchArray.length;  
+          
+          SmartDashboard.putNumber("AveragePitch", averagePitch);
+
+          deltaPitch = Math.abs(initialRobotPitch - averagePitch);
+
+          if(chargeStationState == 1)
+          {
+            m_swerveDrivetrain.driveStraight(-0.60, initialRobotYaw, initialTicks);
+            if(deltaPitch > 16)
+            {
+              hasStartedAscent = true;
+              chargeStationState = 2;
+            }
+          }
+
+          if(chargeStationState == 2)
+          {
+            m_swerveDrivetrain.driveStraight(-0.15, initialRobotYaw, initialTicks);
+          }
+          
           SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         interrupted-> 
@@ -591,8 +621,9 @@ public class RobotContainer
           }
           chargeStationState = 3;
           SmartDashboard.putNumber("Charge Station State", chargeStationState);
+          hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaPitch <= 14,
+        ()-> hasStartedAscent == true && deltaPitch <= 7,
         m_swerveDrivetrain)
     );
   }
