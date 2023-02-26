@@ -248,7 +248,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
     double FWD = 0;
     
     // adjust for field oriented drive
-    double gyro_rad = gyroYaw / 180 * Math.PI;
+    //double gyro_rad = gyroYaw / 180 * Math.PI;
+    double gyro_rad = (gyroYaw + 180) / 180 * Math.PI;
     double tFWD = STR * Math.sin(gyro_rad);
     STR = STR * Math.cos(gyro_rad);
     FWD = tFWD;
@@ -403,7 +404,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
     double STR = 0;
 
     // adjust for field oriented drive
-    double gyro_rad = gyroYaw / 180 * Math.PI;
+    //double gyro_rad = gyroYaw / 180 * Math.PI;
+    double gyro_rad = (gyroYaw + 180) / 180 * Math.PI;
     double tFWD = FWD * Math.cos(gyro_rad);
     STR = -FWD * Math.sin(gyro_rad);
     FWD = tFWD;
@@ -522,8 +524,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
   {
     gyroYaw = gyro.getYaw();
     SmartDashboard.putNumber("Yaw", gyroYaw);
-
     SmartDashboard.putNumber("PITCH", gyro.getPitch());
+
     for(int lp=0; lp<4; lp++)
   {
       SmartDashboard.putNumber(lp +"-" + cancoderoffset[lp], cancoder[lp].getAbsolutePosition());
