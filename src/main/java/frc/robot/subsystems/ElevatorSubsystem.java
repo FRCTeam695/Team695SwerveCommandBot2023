@@ -102,8 +102,6 @@ public class ElevatorSubsystem extends SubsystemBase
     TargetPos = levelTicks[newLevel];
     et.reset();
     et.start();
-
-    System.out.println("going to level " + newLevel + " : " + TargetPos);
   }
 
   public boolean elevatorActive()
@@ -131,7 +129,9 @@ public class ElevatorSubsystem extends SubsystemBase
 
     if (HoldPos == true)
     {
-      double co = MathUtil.clamp(HoldPID.calculate(getPosition(), TargetPos), -0.08, 0.08);
+      pos = getPosition();
+
+      double co = MathUtil.clamp(HoldPID.calculate(pos, TargetPos), -0.08, 0.08);
       if(pos < 1000)
       {
         co = 0;
@@ -143,6 +143,7 @@ public class ElevatorSubsystem extends SubsystemBase
     HoldPID.reset();
     if (newLevel == currentLevel)
     {
+      HoldPos = true;
       return;
     }
 
@@ -153,11 +154,12 @@ public class ElevatorSubsystem extends SubsystemBase
       return;
     }
 
+    // going up?
     if (newLevel > currentLevel)
     {
 
       // compute trapezoid inflection points
-      plateauStart = levelTicks[currentLevel] + 6000;
+      plateauStart = levelTicks[currentLevel];
       plateauEnd = levelTicks[newLevel];
         
       // get current encoder position
@@ -168,6 +170,7 @@ public class ElevatorSubsystem extends SubsystemBase
       {
         currentLevel = newLevel;
         HoldPos = true;
+        m_ElevatorFalcon.set(0);
         return;
       }
 
@@ -206,8 +209,8 @@ public class ElevatorSubsystem extends SubsystemBase
       maxSpeed /= 2;
 
       // compute trapezoid inflection points
-      plateauStart = levelTicks[currentLevel] - 6000;
-      plateauEnd = levelTicks[newLevel]+6000;
+      plateauStart = levelTicks[currentLevel];
+      plateauEnd = levelTicks[newLevel] + 6000;
 
       // get current encoder position
       ticks = getPosition();

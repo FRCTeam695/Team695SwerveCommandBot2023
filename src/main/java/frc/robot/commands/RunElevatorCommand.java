@@ -4,11 +4,7 @@
 
 package frc.robot.commands;
 
-import java.text.spi.BreakIteratorProvider;
-
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ElevatorSubsystem;
 
@@ -44,8 +40,9 @@ public class RunElevatorCommand extends CommandBase
 
   // Returns true when the command should end.
   @Override
-  public boolean isFinished() {
+  public boolean isFinished()
+  {
     return true;
-    //return m_ElevatorSubsystem.getPosition() >= maxTicks;
   }
+  
 }
