@@ -51,9 +51,9 @@ public class SwerveDriveCommand extends CommandBase
 
     if(elevator.elevatorActive())
     {
-      Xj = 0.2 * Xj;
-      Yj = 0.2 * Yj;
-      Zj = 0.2 * Zj;
+      Xj = 0.5 * Xj;
+      Yj = 0.5 * Yj;
+      Zj = 0.5 * Zj;
     }
 
     // Min and max steering motor percent output
@@ -83,10 +83,10 @@ public class SwerveDriveCommand extends CommandBase
     // Limit rotate to 20% motor
     RCW /= 3;
 
-    if(elevator.elevatorActive())
+    /*if(elevator.elevatorActive())
     {
       RCW *=3;
-    }
+    }*/
 
     // adjust for field oriented drive
     //double gyro_rad = (drivetrain.gyroYaw + m_angleChooser.getSelected()) / 180 * Math.PI;
