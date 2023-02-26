@@ -41,8 +41,9 @@ public class SwerveDriveSubsystem extends SubsystemBase
   };
 
   // Cancoder mounting orientation offsets (degrees)
- //static double[] cancoderoffset = { 170, 228, 170, 204 };
-  static double[] cancoderoffset = { 155, 223, 130, 152 };
+ // summer 2022 bot:  static double[] cancoderoffset = { 170, 228, 170, 204 };
+// prev prod 2023 bot:  static double[] cancoderoffset = { 155, 223, 252, 205 };
+  static double[] cancoderoffset = { 156, 222, 247, 195 };
   //static double[] cancoderoffset = new double[4];
 
   // Steering motors
