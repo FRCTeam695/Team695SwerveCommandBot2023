@@ -128,7 +128,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
 
     if (running == true)
     {
-      if (stalltimer.get() > 0.250)
+      if (stalltimer.get() > 0.500)
       {
         currentposition = m_encoder.getPosition();
         if (Math.abs(currentposition - lastposition) < 3)
