@@ -623,7 +623,7 @@ public class RobotContainer
           SmartDashboard.putNumber("Charge Station State", chargeStationState);
           hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaPitch <= 7,
+        ()-> hasStartedAscent == true && deltaPitch <= 9,
         m_swerveDrivetrain)
     );
   }
