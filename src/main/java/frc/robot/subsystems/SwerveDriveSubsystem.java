@@ -43,7 +43,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
   // Cancoder mounting orientation offsets (degrees)
  // summer 2022 bot:  static double[] cancoderoffset = { 170, 228, 170, 204 };
 // prev prod 2023 bot:  static double[] cancoderoffset = { 155, 223, 252, 205 };
-  static double[] cancoderoffset = { 156, 222, 247, 187 };
+  static double[] cancoderoffset = { 156, 222, 247, 24 };
   //static double[] cancoderoffset = new double[4];
 
   // Steering motors
@@ -66,7 +66,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
   
   // Default drive rotation directions (corner 1 is negated due to the camcoder mounting orientation)
   // public static double[] defaultrotation = { -1, 1, 1, 1 };
-  public static double[] defaultrotation = { -1, -1, -1, -1 };
+  public static double[] defaultrotation = { -1, -1, -1, 1 };
   //public static double[] defaultrotation = new double[4];
 
 
