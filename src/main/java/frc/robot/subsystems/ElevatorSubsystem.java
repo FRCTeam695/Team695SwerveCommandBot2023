@@ -206,7 +206,7 @@ public class ElevatorSubsystem extends SubsystemBase
     // going down?
     else
     {
-      maxSpeed /= 2;
+      maxSpeed /= 4;
 
       // compute trapezoid inflection points
       plateauStart = levelTicks[currentLevel];
