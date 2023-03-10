@@ -114,7 +114,7 @@ public class SwerveDriveCommand extends CommandBase
     }
 
     // Limit rotate to 20% motor
-    RCW /= 3;
+    RCW /= 2;
 
     /*if(elevator.elevatorActive())
     {
