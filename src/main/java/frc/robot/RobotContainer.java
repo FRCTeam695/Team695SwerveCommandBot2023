@@ -267,7 +267,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -288,7 +288,7 @@ public class RobotContainer
         ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
         ()-> 
         {
-          m_swerveDrivetrain.driveStrafe((-0.40)*(getAlliance()), initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStrafe((-0.60)*(getAlliance()), initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -318,7 +318,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -339,7 +339,7 @@ public class RobotContainer
         ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
         ()-> 
         {
-          m_swerveDrivetrain.driveStrafe((-0.40)*(getAlliance()), initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStrafe((-0.60)*(getAlliance()), initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -369,7 +369,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -390,7 +390,7 @@ public class RobotContainer
         ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
         ()-> 
         {
-          m_swerveDrivetrain.driveStrafe((0.40)*(getAlliance()), initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStrafe((0.60)*(getAlliance()), initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -420,7 +420,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -441,7 +441,7 @@ public class RobotContainer
         ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
         ()-> 
         {
-          m_swerveDrivetrain.driveStrafe((0.40)*(getAlliance()), initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStrafe((0.60)*(getAlliance()), initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -517,7 +517,7 @@ public class RobotContainer
         },
         ()-> 
         {
-          m_swerveDrivetrain.driveStraight(0.40, initialRobotYaw, initialTicks);
+          m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
           deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
         },
         interrupted-> 
@@ -538,7 +538,7 @@ public class RobotContainer
       ()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();},
       ()-> 
       {
-        m_swerveDrivetrain.driveStrafe((-0.40)*(getAlliance()), initialRobotYaw, initialTicks);
+        m_swerveDrivetrain.driveStrafe((-0.60)*(getAlliance()), initialRobotYaw, initialTicks);
         deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
       },
       interrupted-> 
