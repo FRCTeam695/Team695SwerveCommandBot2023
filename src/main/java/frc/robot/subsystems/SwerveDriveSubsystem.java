@@ -142,8 +142,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
     // current limit drive falcons
     SupplyCurrentLimitConfiguration falconlimit = new SupplyCurrentLimitConfiguration();
     falconlimit.enable = true;
-    falconlimit.currentLimit = 40;
-    falconlimit.triggerThresholdCurrent = 40;
+    falconlimit.currentLimit = 45;
+    falconlimit.triggerThresholdCurrent = 45;
     falconlimit.triggerThresholdTime = 0;
 
     for(int lp=0; lp<4; lp++)
