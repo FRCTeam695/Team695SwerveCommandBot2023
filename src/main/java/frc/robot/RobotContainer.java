@@ -145,7 +145,7 @@ public class RobotContainer
     //m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setDirection(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
-    m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain));
+    m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.1);}, m_swerveDrivetrain));
     m_Pilot_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
     
@@ -241,7 +241,7 @@ public class RobotContainer
   public Command scorePreload()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
-      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain))
+      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0);}, m_swerveDrivetrain))
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1))
       .andThen(new WaitCommand(1))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
