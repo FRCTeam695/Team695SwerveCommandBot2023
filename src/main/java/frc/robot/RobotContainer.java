@@ -49,8 +49,15 @@ public class RobotContainer
   private final JoystickButton m_Pilot_RightBumper = new JoystickButton(m_Pilot_Controller, 6);
 // elevator  private final JoystickButton m_Pilot_BACK = new JoystickButton(m_Pilot_Controller, 7);
 // elevator  private final JoystickButton m_Pilot_START = new JoystickButton(m_Pilot_Controller, 8);
-  private final DoubleSupplier m_Pilot_Left_XAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(0), 3));
-  private final DoubleSupplier m_Pilot_Left_YAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(1), 3));
+  
+  // with pow3:
+  //private final DoubleSupplier m_Pilot_Left_XAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(0), 3));
+  //private final DoubleSupplier m_Pilot_Left_YAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(1), 3));
+
+  // without pow3:
+  private final DoubleSupplier m_Pilot_Left_XAxis = () -> (m_Pilot_Controller.getRawAxis(0));
+  private final DoubleSupplier m_Pilot_Left_YAxis = () -> (m_Pilot_Controller.getRawAxis(1));
+  
   private final DoubleSupplier m_Pilot_Right_XAxis = () -> (m_Pilot_Controller.getRawAxis(4));
 
   //F310_Copilot Variables
