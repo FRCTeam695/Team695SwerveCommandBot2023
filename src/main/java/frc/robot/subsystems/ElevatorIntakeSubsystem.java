@@ -121,6 +121,11 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     }
   }
 
+  public boolean getStallHold()
+  {
+    return stallhold;
+  }
+
   @Override
   public void periodic() 
   {

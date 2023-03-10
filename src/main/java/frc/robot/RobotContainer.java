@@ -152,7 +152,7 @@ public class RobotContainer
     m_Pilot_LeftBumper.onTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1));
     m_Pilot_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1));
 
-    m_Pilot_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem));
+    m_Pilot_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, m_ElevatorIntakeSubsystem));
 
     /*
     m_F310_Copilot_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 0));
@@ -244,10 +244,10 @@ public class RobotContainer
       .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0);}, m_swerveDrivetrain))
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1))
       .andThen(new WaitCommand(1))
-      .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem, m_ElevatorIntakeSubsystem))
       .andThen(new WaitCommand(2))
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1))
-      .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem, m_ElevatorIntakeSubsystem));
   }
 
   double initialRobotYaw;
