@@ -73,12 +73,45 @@ public class SwerveDriveCommand extends CommandBase
     double deadband = 0.075;
     double STR = Xj;
     if (STR > -deadband && STR < deadband) STR = 0;
+    else
+    {
+      if (STR > 0)
+      {
+        STR = (STR - deadband) / (1 - deadband);
+      }
+      else
+      {
+        STR = (STR + deadband) / (1 - deadband);
+      }
+    }
 
     double FWD = -Yj;
     if (FWD > -deadband && FWD < deadband) FWD = 0;
+    else
+    {
+      if (FWD > 0)
+      {
+        FWD = (FWD - deadband) / (1 - deadband);
+      }
+      else
+      {
+        FWD = (FWD + deadband) / (1 - deadband);
+      }
+    }
 
     double RCW = Zj;
     if (RCW > -deadband && RCW < deadband) RCW = 0;
+    else
+    {
+      if (RCW > 0)
+      {
+        RCW = (RCW - deadband) / (1 - deadband);
+      }
+      else
+      {
+        RCW = (RCW + deadband) / (1 - deadband);
+      }
+    }
 
     // Limit rotate to 20% motor
     RCW /= 3;
@@ -203,6 +236,15 @@ public class SwerveDriveCommand extends CommandBase
         drivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
       }
     }
+
+    System.out.printf("%10.2f %10.2f %10.2f %10.2f %10.2f %10.2f\n",
+      Xj, Yj,
+      rotation[0] * speed[0],
+      rotation[1] * speed[1],
+      rotation[2] * speed[2],
+      rotation[3] * speed[3]
+    );
+
   }
 
   // Called once the command ends or is interrupted.
