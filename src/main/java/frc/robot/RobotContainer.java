@@ -175,8 +175,8 @@ public class RobotContainer
     m_pathChooser.setDefaultOption("Substation Cube Path", substationCubePath());
     m_pathChooser.addOption("Coopertition Cube Path", coopertitionCubePath());
     m_pathChooser.addOption("Score Table Cube Path", scoreTableCubePath());
-    m_pathChooser.setDefaultOption("Substation Cone Path", substationConePath());
-    m_pathChooser.setDefaultOption("Score Table Cone Path", scoreTableConePath());
+    m_pathChooser.addOption("Substation Cone Path", substationConePath());
+    m_pathChooser.addOption("Score Table Cone Path", scoreTableConePath());
     SmartDashboard.putData(m_pathChooser);
 
     m_secChooser.setDefaultOption("0", 0.0);
