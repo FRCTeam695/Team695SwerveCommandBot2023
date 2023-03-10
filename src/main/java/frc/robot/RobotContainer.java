@@ -191,7 +191,7 @@ public class RobotContainer
     m_chargeStationChooser.addOption("Engage Station", dynamicEngageChargeStation());
     SmartDashboard.putData(m_chargeStationChooser);
 
-    CameraServer.startAutomaticCapture();
+    //CameraServer.startAutomaticCapture();
   }
 
   /**
