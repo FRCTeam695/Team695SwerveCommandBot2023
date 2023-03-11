@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -59,6 +60,17 @@ public class RobotContainer
   private final DoubleSupplier m_Pilot_Left_YAxis = () -> (m_Pilot_Controller.getRawAxis(1));
   
   private final DoubleSupplier m_Pilot_Right_XAxis = () -> (m_Pilot_Controller.getRawAxis(4));
+
+  // POV Buttons
+  private final POVButton m_Pilot_POV_UP = new POVButton(m_Pilot_Controller, 0);
+  private final POVButton m_Pilot_POV_RIGHT = new POVButton(m_Pilot_Controller, 90);
+  private final POVButton m_Pilot_POV_DOWN = new POVButton(m_Pilot_Controller, 180);
+  private final POVButton m_Pilot_POV_LEFT = new POVButton(m_Pilot_Controller, 270);
+
+  // Constant sped suppliers
+  private final DoubleSupplier m_ConstantSpeed = () -> (0.4);
+  private final DoubleSupplier m_ConstantSpeedInverted = () -> (-0.4);
+  private final DoubleSupplier m_NoSpeed = () -> (0);  
 
   //F310_Copilot Variables
   /*
@@ -148,6 +160,10 @@ public class RobotContainer
     m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.1);}, m_swerveDrivetrain));
     m_Pilot_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
+    m_Pilot_POV_UP.whileTrue(new SwerveDriveCommand(m_NoSpeed, m_ConstantSpeedInverted, m_NoSpeed, m_swerveDrivetrain, m_ElevatorSubsystem));
+    m_Pilot_POV_RIGHT.whileTrue(new SwerveDriveCommand(m_ConstantSpeed, m_NoSpeed, m_NoSpeed, m_swerveDrivetrain, m_ElevatorSubsystem));
+    m_Pilot_POV_DOWN.whileTrue(new SwerveDriveCommand(m_NoSpeed, m_ConstantSpeed, m_NoSpeed, m_swerveDrivetrain, m_ElevatorSubsystem));
+    m_Pilot_POV_LEFT.whileTrue(new SwerveDriveCommand(m_ConstantSpeedInverted, m_NoSpeed, m_NoSpeed, m_swerveDrivetrain, m_ElevatorSubsystem));
     
     m_Pilot_LeftBumper.onTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1));
     m_Pilot_RightBumper.whileTrue(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1));
