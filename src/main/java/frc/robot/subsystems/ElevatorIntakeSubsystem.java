@@ -9,6 +9,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.*;
 
+import edu.wpi.first.networktables.IntegerPublisher;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -24,6 +26,10 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
   private boolean running;
   private double runspeed;
 
+  private NetworkTable ntSidecar;
+  private IntegerPublisher stalled;
+  private IntegerPublisher currentLevel;
+  
   public ElevatorIntakeSubsystem() 
   {
     m_intake.restoreFactoryDefaults();
@@ -31,7 +37,10 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     m_encoder.setPosition(0);
     stallhold = false;
     running = false;
-    NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(0);
+    ntSidecar = NetworkTableInstance.getDefault().getTable("sidecar695");
+    stalled = ntSidecar.getIntegerTopic("stalled").publish();
+    currentLevel = ntSidecar.getIntegerTopic("currentLevel").publish();
+    stalled.set(0);
   }
 
   // direction:  -1=in, 1=out
@@ -47,7 +56,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
         runspeed = 0;
         m_intake.set(runspeed);
         stallhold = false;
-        NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(0);
+        ntSidecar.getIntegerTopic("stalled").publish().set(0);
         return;
       }
     }
@@ -58,7 +67,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
       runspeed = 0;
       m_intake.set(runspeed);
       stallhold = false;
-      NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(0);
+      ntSidecar.getIntegerTopic("stalled").publish().set(0);
     }
 
     // read current encoder for stall detection
@@ -69,7 +78,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     stalltimer.start();
 
     // get game piece type being played to set intake direction and current limits
-    long currentIntakeMode = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentIntakeMode").getInteger(-1);
+    long currentIntakeMode = ntSidecar.getEntry("currentIntakeMode").getInteger(-1);
 
     // cones
     if (currentIntakeMode == 1)
@@ -140,7 +149,6 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
         {
           m_intake.setSmartCurrentLimit(3);
           stallhold = true;
-          NetworkTableInstance.getDefault().getTable("sidecar695").getIntegerTopic("stalled").publish().set(1);
         }
         else
         {
@@ -149,6 +157,20 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
         stalltimer.reset();
         stalltimer.start();
       }
+    }
+
+    // if we are stalled, set next elevator level from user input
+    if (stallhold == true)
+    {
+      stalled.set(1);
+      currentLevel.set(ntSidecar.getEntry("requestLevel").getInteger(-1));
+    }
+
+    // otherwise, no stall, so set next elevator level to station
+    else
+    {
+      stalled.set(0);
+      currentLevel.set(3);
     }
 
   }

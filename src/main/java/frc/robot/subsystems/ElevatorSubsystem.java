@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class ElevatorSubsystem extends SubsystemBase 
 {
@@ -72,8 +73,9 @@ public class ElevatorSubsystem extends SubsystemBase
     return(0);
   }
 
-  public void runToLevel(int newLevel)
+  public void runToLevel()
   {
+    long newLevel = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentLevel").getInteger(-1);
     
     // check for reset
     if (newLevel == -1)
@@ -97,9 +99,9 @@ public class ElevatorSubsystem extends SubsystemBase
     }
 
     // kickoff elevator move in periodic callback
-    this.newLevel = newLevel;
+    this.newLevel = (int) newLevel;
     HoldPos = false;
-    TargetPos = levelTicks[newLevel];
+    TargetPos = levelTicks[(int) newLevel];
     et.reset();
     et.start();
   }
@@ -139,6 +141,8 @@ public class ElevatorSubsystem extends SubsystemBase
       m_ElevatorFalcon.set(co);
       return;
     }
+
+    // here if we're not holdoing position
 
     HoldPID.reset();
     if (newLevel == currentLevel)
