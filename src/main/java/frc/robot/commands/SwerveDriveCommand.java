@@ -65,8 +65,8 @@ public class SwerveDriveCommand extends CommandBase
     double co;
 
     // Chassis dimensions
-    double L = 27;
-    double W = 30;
+    double L = 21.5;
+    double W = 24.5;
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
@@ -237,6 +237,7 @@ public class SwerveDriveCommand extends CommandBase
       }
     }
 
+    /*
     System.out.printf("%10.2f %10.2f %10.2f %10.2f %10.2f %10.2f\n",
       Xj, Yj,
       rotation[0] * speed[0],
@@ -244,6 +245,7 @@ public class SwerveDriveCommand extends CommandBase
       rotation[2] * speed[2],
       rotation[3] * speed[3]
     );
+    */
 
   }
 
