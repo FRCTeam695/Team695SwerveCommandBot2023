@@ -145,7 +145,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
       if (stalltimer.get() > 0.500)
       {
         currentposition = m_encoder.getPosition();
-        if (Math.abs(currentposition - lastposition) < 3)
+        if (Math.abs(currentposition - lastposition) < 2)
         {
           m_intake.setSmartCurrentLimit(3);
           stallhold = true;
