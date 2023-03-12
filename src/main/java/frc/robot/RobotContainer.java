@@ -350,7 +350,7 @@ public class RobotContainer
                 m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
               }
             },
-            ()-> deltaTicks >= 241000,    //275000
+            ()-> deltaTicks >= 240500,    //275000
             m_swerveDrivetrain)
         )
         .andThen(new WaitCommand(0.1))
