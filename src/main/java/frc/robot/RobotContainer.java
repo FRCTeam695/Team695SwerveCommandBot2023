@@ -193,6 +193,8 @@ public class RobotContainer
     m_pathChooser.addOption("Score Table Cube Path", scoreTableCubePath());
     m_pathChooser.addOption("Substation Cone Path", substationConePath());
     m_pathChooser.addOption("Score Table Cone Path", scoreTableConePath());
+    m_pathChooser.addOption("Substation Cube PIROUETTE", substationCubePathPirouette());
+    m_pathChooser.addOption("Substation Cube ROTATE", substationCubePathRotate());
     SmartDashboard.putData(m_pathChooser);
 
     m_secChooser.setDefaultOption("0", 0.0);
@@ -269,6 +271,164 @@ public class RobotContainer
   double initialRobotYaw;
   double initialTicks;
   double deltaTicks;
+  boolean metDesiredAngle;
+
+  public Command substationCubePathPirouette()
+  {
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+      .andThen
+      (
+        new FunctionalCommand(
+        ()-> 
+        {
+          initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        },
+        ()-> 
+        {
+          m_swerveDrivetrain.driveSpline(0, 0.40, initialTicks, 180);
+          deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+        },
+        ()-> deltaTicks >= 300000,    //121000
+        m_swerveDrivetrain)
+      )
+      .andThen(new WaitCommand(5))
+      .andThen
+      (
+        new FunctionalCommand(
+        ()-> 
+        {
+          initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        },
+        ()-> 
+        {
+          m_swerveDrivetrain.driveSpline(0, -0.40, initialTicks, 0);
+          deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+        },
+        interrupted-> 
+        {
+          for(int lp=0; lp<4; lp++)
+          {
+            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+          }
+        },
+        ()-> deltaTicks >= 300000,    //121000
+        m_swerveDrivetrain)
+      )
+      .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
+    }
+
+    public Command substationCubePathRotate()
+    {
+      return new InstantCommand(()-> {new WaitCommand(0.001);})
+        .andThen
+        (
+          new FunctionalCommand( 
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveStraight(0.50, initialRobotYaw, initialTicks);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 241000,    //275000
+            m_swerveDrivetrain)
+        )
+        .andThen(new WaitCommand(0.1))
+        .andThen
+        (
+          new FunctionalCommand( 
+            ()-> 
+            {
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.rotateInPlace(135);
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> (m_swerveDrivetrain.gyroYaw >= 129),    //275000
+            m_swerveDrivetrain)
+        )
+        .andThen(new WaitCommand(0.1))
+        .andThen
+        (
+          new FunctionalCommand(
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveSpline(-0.15, 0.15, initialTicks, 130);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 60000,    //121000
+            m_swerveDrivetrain)
+          .raceWith
+          (
+            new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
+          )
+        )
+        .andThen(new WaitCommand(0.001))
+        .andThen
+        (
+          new FunctionalCommand(
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveSpline(-0.40, -0.40, initialTicks, 0);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 175000,    //121000
+            m_swerveDrivetrain)
+        )
+        .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
+    }
   
   public Command substationCubePath()
   {
