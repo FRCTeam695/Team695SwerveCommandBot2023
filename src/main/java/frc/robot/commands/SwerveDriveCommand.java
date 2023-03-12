@@ -9,6 +9,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -44,6 +45,12 @@ public class SwerveDriveCommand extends CommandBase
   @Override
   public void execute() 
   {
+
+    if(DriverStation.isAutonomous())
+    {
+      return;
+    }
+
     // Scaled to 1/2 speed
     double Xj = XjSupplier.getAsDouble();
     double Yj = YjSupplier.getAsDouble();
@@ -113,7 +120,7 @@ public class SwerveDriveCommand extends CommandBase
       }
     }
 
-    // Limit rotate to 20% motor
+    // Limit rotate speed
     RCW /= 2;
 
     /*if(elevator.elevatorActive())
