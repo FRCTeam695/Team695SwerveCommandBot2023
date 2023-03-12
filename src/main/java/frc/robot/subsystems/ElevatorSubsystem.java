@@ -115,6 +115,11 @@ public class ElevatorSubsystem extends SubsystemBase
     return(false);
   }
 
+  public boolean getHold()
+  {
+    return HoldPos;
+  }
+
   @Override
   public void periodic() 
   {

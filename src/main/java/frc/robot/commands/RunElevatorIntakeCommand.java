@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ElevatorIntakeSubsystem;
 
@@ -47,6 +48,14 @@ public class RunElevatorIntakeCommand extends CommandBase
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    if(DriverStation.isAutonomous())
+    {
+      if(m_ElevatorIntakeSubsystem.getStallHold())
+      {
+        return true;
+      }
+      return false;
+    }
     // running in is a toggle, so set to immediately exit
     if (direction == -1)
     {

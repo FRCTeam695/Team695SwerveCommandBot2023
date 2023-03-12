@@ -258,11 +258,11 @@ public class RobotContainer
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
       .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0);}, m_swerveDrivetrain))
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1))
-      .andThen(new WaitCommand(1))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1).withTimeout(3))
+      .andThen(new WaitCommand(0.001))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
-      .andThen(new WaitCommand(2))
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1))
+      .andThen(new WaitCommand(0.001))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
   }
 

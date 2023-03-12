@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ElevatorSubsystem;
 
@@ -50,6 +51,14 @@ public class RunElevatorCommand extends CommandBase
   @Override
   public boolean isFinished()
   {
+    if(DriverStation.isAutonomous())
+    {
+      if(m_ElevatorSubsystem.getHold() == false)
+      {
+        return false;
+      }
+      return true;
+    }
     return true;
   }
   
