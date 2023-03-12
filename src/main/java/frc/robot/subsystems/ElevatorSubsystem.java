@@ -120,7 +120,7 @@ public class ElevatorSubsystem extends SubsystemBase
   {
     double maxTime = 3.0;     // maximum seconds to allow run
     double minSpeed = 0.2;    // start speed
-    double maxSpeed = 1;      // plateau speed
+    double maxSpeed = 1.0;      // plateau speed
     double plateauStart;      // threshold tick count when ramp up is complete
     double plateauEnd;        // threshold tick count to begin ramp down
     double targetSpeed;
@@ -210,7 +210,7 @@ public class ElevatorSubsystem extends SubsystemBase
     // going down?
     else
     {
-      maxSpeed /= 3;
+      maxSpeed *= 0.4;
 
       // compute trapezoid inflection points
       plateauStart = levelTicks[currentLevel];
