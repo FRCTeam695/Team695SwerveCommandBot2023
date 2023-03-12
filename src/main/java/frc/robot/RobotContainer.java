@@ -385,7 +385,7 @@ public class RobotContainer
             },
             ()-> 
             {
-              m_swerveDrivetrain.driveSpline(-0.15, 0.15, initialTicks, 130);
+              m_swerveDrivetrain.driveSpline((-0.15)*(getAlliance()), 0.15, initialTicks, 130);
               deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
             },
             interrupted-> 
@@ -413,7 +413,7 @@ public class RobotContainer
             },
             ()-> 
             {
-              m_swerveDrivetrain.driveSpline(-0.40, -0.40, initialTicks, 0);
+              m_swerveDrivetrain.driveSpline((-0.40)*(getAlliance()), -0.40, initialTicks, 0);
               deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
             },
             interrupted-> 
