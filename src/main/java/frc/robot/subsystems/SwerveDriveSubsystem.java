@@ -16,7 +16,6 @@ import frc.robot.Constants;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.kauailabs.navx.frc.*;
@@ -42,7 +41,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
   // Cancoder mounting orientation offsets (degrees)
  // summer 2022 bot:  static double[] cancoderoffset = { 170, 228, 170, 204 };
-// prev prod 2023 bot:  static double[] cancoderoffset = { 155, 223, 252, 205 };
   static double[] cancoderoffset = { 158, 222, 247, 29 };
   //static double[] cancoderoffset = new double[4];
 
@@ -64,8 +62,8 @@ public class SwerveDriveSubsystem extends SubsystemBase
     new TalonFX(43, "drivetrain")
   };
   
-  // Default drive rotation directions (corner 1 is negated due to the camcoder mounting orientation)
-  // public static double[] defaultrotation = { -1, 1, 1, 1 };
+  // Default drive rotation directions
+  // summer 2022 bot:  public static double[] defaultrotation = { -1, 1, 1, 1 };
   public static double[] defaultrotation = { -1, -1, -1, 1 };
   //public static double[] defaultrotation = new double[4];
 
@@ -126,10 +124,12 @@ public class SwerveDriveSubsystem extends SubsystemBase
     {
       talonpid[lp].reset();
       x = (cancoder[lp].getAbsolutePosition() - cancoderoffset[lp]) / 180 * (Constants.talon_mk4i_360_count / 2);
-      steer[lp].setSelectedSensorPosition(-1 * x, 0, 0);
+      System.out.printf("%d %f\n", lp, x);
+      steer[lp].setSelectedSensorPosition(-1 * x, 0, 100);
       x = steer[lp].getSelectedSensorPosition(0);
+      System.out.printf("%d %f\n", lp, x);
     }
-    Timer.delay(delay);     // Optional wait for CANbus
+    //Timer.delay(delay);     // Optional wait for CANbus
     System.out.println("End CancoderHome()");
   }
 
