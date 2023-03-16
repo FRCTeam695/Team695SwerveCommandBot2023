@@ -77,7 +77,7 @@ public class SwerveDriveCommand extends CommandBase
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
-    double deadband = 0.075;
+    double deadband = 0.1;
     double STR = Xj;
     if (STR > -deadband && STR < deadband) STR = 0;
     else

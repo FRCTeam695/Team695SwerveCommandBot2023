@@ -92,10 +92,10 @@ public class VisionSubsystem extends SubsystemBase {
       area = 0;
     }
 
-    SmartDashboard.putBoolean("LT", hasTarget());
-    SmartDashboard.putNumber("LTPitch", pitch);
-    SmartDashboard.putNumber("LTYaw", yaw);
-    SmartDashboard.putNumber("LTArea",area);  
+//    SmartDashboard.putBoolean("LT", hasTarget());
+//    SmartDashboard.putNumber("LTPitch", pitch);
+//    SmartDashboard.putNumber("LTYaw", yaw);
+//    SmartDashboard.putNumber("LTArea",area);  
 
   }
 }

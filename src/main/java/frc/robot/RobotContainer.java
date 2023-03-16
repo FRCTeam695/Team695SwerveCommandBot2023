@@ -157,7 +157,7 @@ public class RobotContainer
     //m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setDirection(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
-    m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.1);}, m_swerveDrivetrain));
+    m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.2);}, m_swerveDrivetrain));
     m_Pilot_B.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.gyro.reset();}, m_swerveDrivetrain));
 
     m_Pilot_POV_UP.whileTrue(new SwerveDriveCommand(m_NoSpeed, m_ConstantSpeedInverted, m_NoSpeed, m_swerveDrivetrain, m_ElevatorSubsystem));
@@ -193,9 +193,9 @@ public class RobotContainer
     m_pathChooser.addOption("Score Table Cube Path", scoreTableCubePath());
     m_pathChooser.addOption("Substation Cone Path", substationConePath());
     m_pathChooser.addOption("Score Table Cone Path", scoreTableConePath());
-    m_pathChooser.addOption("Substation Cube PIROUETTE", substationCubePathPirouette());
-    m_pathChooser.addOption("Substation Cube ROTATE", substationCubePathRotate());
-    SmartDashboard.putData(m_pathChooser);
+    //m_pathChooser.addOption("Substation Cube PIROUETTE", substationCubePathPirouette());
+    m_pathChooser.addOption("Substation 2 Cone Auton", substation2ConeAuton());
+    SmartDashboard.putData("Auton Routine", m_pathChooser);
 
     m_secChooser.setDefaultOption("0", 0.0);
     m_secChooser.addOption("1", 1.0);
@@ -203,11 +203,11 @@ public class RobotContainer
     m_secChooser.addOption("3", 3.0);
     m_secChooser.addOption("4", 4.0);
     m_secChooser.addOption("5", 5.0);
-    SmartDashboard.putData(m_secChooser);
+    SmartDashboard.putData("Auton Start Delay", m_secChooser);
 
     m_chargeStationChooser.setDefaultOption("Do Not Engage Station", doNothing());
     m_chargeStationChooser.addOption("Engage Station", dynamicEngageChargeStation());
-    SmartDashboard.putData(m_chargeStationChooser);
+    SmartDashboard.putData("Auton Charge Station", m_chargeStationChooser);
 
     //CameraServer.startAutomaticCapture();
   }
@@ -259,7 +259,7 @@ public class RobotContainer
   public Command scorePreload()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
-      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0);}, m_swerveDrivetrain))
+      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.2);}, m_swerveDrivetrain))
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1).withTimeout(3))
       .andThen(new WaitCommand(0.001))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
@@ -326,7 +326,7 @@ public class RobotContainer
       .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
     }
 
-    public Command substationCubePathRotate()
+    public Command substation2ConeAuton()
     {
       return new InstantCommand(()-> {new WaitCommand(0.001);})
         .andThen
@@ -350,10 +350,10 @@ public class RobotContainer
                 m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
               }
             },
-            ()-> deltaTicks >= 240500,    //275000
+            ()-> deltaTicks >= 241250,    //275000
             m_swerveDrivetrain)
         )
-        .andThen(new WaitCommand(0.1))
+        .andThen(new WaitCommand(0.001))
         .andThen
         (
           new FunctionalCommand( 
@@ -362,7 +362,7 @@ public class RobotContainer
             },
             ()-> 
             {
-              m_swerveDrivetrain.rotateInPlace(135);
+              m_swerveDrivetrain.rotateInPlace(135*getAlliance());
             },
             interrupted-> 
             {
@@ -372,10 +372,10 @@ public class RobotContainer
                 m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
               }
             },
-            ()-> (m_swerveDrivetrain.gyroYaw >= 129),    //275000
+            ()-> (Math.abs(m_swerveDrivetrain.gyroYaw) >= 129),    //275000
             m_swerveDrivetrain)
         )
-        .andThen(new WaitCommand(0.1))
+        .andThen(new WaitCommand(0.001))
         .andThen
         (
           new FunctionalCommand(
@@ -385,7 +385,7 @@ public class RobotContainer
             },
             ()-> 
             {
-              m_swerveDrivetrain.driveSpline((-0.15)*(getAlliance()), 0.15, initialTicks, 130);
+              m_swerveDrivetrain.driveSpline((-0.15)*(getAlliance()), 0.15, initialTicks, 135*getAlliance());
               deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
             },
             interrupted-> 
@@ -413,7 +413,7 @@ public class RobotContainer
             },
             ()-> 
             {
-              m_swerveDrivetrain.driveSpline((-0.40)*(getAlliance()), -0.40, initialTicks, 0);
+              m_swerveDrivetrain.driveSpline((-0.50)*(getAlliance()), -0.50, initialTicks, 0);
               deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
             },
             interrupted-> 
@@ -754,7 +754,7 @@ public class RobotContainer
         {
           chargeStationState = 1;
           initialRobotPitch =  m_swerveDrivetrain.gyro.getPitch();
-          SmartDashboard.putNumber("Charge Station State", chargeStationState);
+//          SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         ()->
         {          
@@ -790,10 +790,10 @@ public class RobotContainer
 
           if(chargeStationState == 2)
           {
-            m_swerveDrivetrain.driveStraight(-0.15, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(-0.18, initialRobotYaw, initialTicks);
           }
           
-          SmartDashboard.putNumber("Charge Station State", chargeStationState);
+          //SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         interrupted-> 
         {
@@ -803,10 +803,10 @@ public class RobotContainer
             m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
           }
           chargeStationState = 3;
-          SmartDashboard.putNumber("Charge Station State", chargeStationState);
+          //SmartDashboard.putNumber("Charge Station State", chargeStationState);
           hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaPitch <= 9,
+        ()-> hasStartedAscent == true && deltaPitch <= 10,
         m_swerveDrivetrain)
     );
   }

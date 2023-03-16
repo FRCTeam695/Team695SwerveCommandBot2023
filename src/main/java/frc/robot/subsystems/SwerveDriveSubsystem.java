@@ -124,12 +124,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
     {
       talonpid[lp].reset();
       x = (cancoder[lp].getAbsolutePosition() - cancoderoffset[lp]) / 180 * (Constants.talon_mk4i_360_count / 2);
-      System.out.printf("%d %f\n", lp, x);
-      steer[lp].setSelectedSensorPosition(-1 * x, 0, 100);
+      steer[lp].setSelectedSensorPosition(-1 * x, 0, 0);
       x = steer[lp].getSelectedSensorPosition(0);
-      System.out.printf("%d %f\n", lp, x);
     }
-    //Timer.delay(delay);     // Optional wait for CANbus
+    Timer.delay(delay);     // Optional wait for CANbus
     System.out.println("End CancoderHome()");
   }
 
