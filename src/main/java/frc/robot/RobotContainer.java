@@ -263,7 +263,7 @@ public class RobotContainer
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1).withTimeout(3))
       .andThen(new WaitCommand(0.001))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
-      .andThen(new WaitCommand(0.001))
+      .andThen(new WaitCommand(1))
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
   }
@@ -424,7 +424,7 @@ public class RobotContainer
                 m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
               }
             },
-            ()-> deltaTicks >= 175000,    //121000
+            ()-> deltaTicks >= 157500,    //121000, was 175000
             m_swerveDrivetrain)
         )
         .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
@@ -806,7 +806,7 @@ public class RobotContainer
           //SmartDashboard.putNumber("Charge Station State", chargeStationState);
           hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaPitch <= 10,
+        ()-> hasStartedAscent == true && deltaPitch <= 11,
         m_swerveDrivetrain)
     );
   }
