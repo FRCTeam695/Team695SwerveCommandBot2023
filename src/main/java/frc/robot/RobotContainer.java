@@ -10,6 +10,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
@@ -104,6 +106,9 @@ public class RobotContainer
 
   //long scorePosition;
   
+  private NetworkTable ntSidecar;
+  private DoublePublisher currentMode;
+
   private final CommandScheduler scheduler = CommandScheduler.getInstance();
   // Limelight:
   private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem();
@@ -209,6 +214,9 @@ public class RobotContainer
     m_chargeStationChooser.addOption("Engage Station", dynamicEngageChargeStation());
     SmartDashboard.putData("Auton Charge Station", m_chargeStationChooser);
 
+    ntSidecar = NetworkTableInstance.getDefault().getTable("sidecar695");
+    currentMode = ntSidecar.getDoubleTopic("currentIntakeMode").publish();
+    
     //CameraServer.startAutomaticCapture();
   }
 
@@ -329,6 +337,7 @@ public class RobotContainer
     public Command substation2ConeAuton()
     {
       return new InstantCommand(()-> {new WaitCommand(0.001);})
+        .andThen(new InstantCommand(() ->{currentMode.set(2);}))
         .andThen
         (
           new FunctionalCommand( 
@@ -339,7 +348,7 @@ public class RobotContainer
             },
             ()-> 
             {
-              m_swerveDrivetrain.driveStraight(0.50, initialRobotYaw, initialTicks);
+              m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
               deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
             },
             interrupted-> 
@@ -350,9 +359,110 @@ public class RobotContainer
                 m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
               }
             },
-            ()-> deltaTicks >= 241250,    //275000
+            ()-> deltaTicks >= 97500,
             m_swerveDrivetrain)
         )
+        .andThen
+        (
+          new FunctionalCommand( 
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveSpline((0.01)*(getAlliance()), 0.40, initialTicks, 90);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 131000,
+            m_swerveDrivetrain)
+        )
+        .andThen
+        (
+          new FunctionalCommand( 
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveStrafe((-0.20)*(getAlliance()), initialRobotYaw, initialTicks);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 80000 || m_ElevatorIntakeSubsystem.getStallHold() == true,
+            m_swerveDrivetrain)
+          .raceWith
+          (
+            new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
+          )
+        )
+        .andThen
+        (
+          new FunctionalCommand( 
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveSpline((0.50)*(getAlliance()), 0, initialTicks, 0);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 20000,
+            m_swerveDrivetrain)
+        )
+        .andThen
+        (
+          new FunctionalCommand( 
+            ()-> 
+            {
+              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+            },
+            ()-> 
+            {
+              m_swerveDrivetrain.driveStraight(-0.60, initialRobotYaw, initialTicks);
+              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            },
+            interrupted-> 
+            {
+              for(int lp=0; lp<4; lp++)
+              {
+                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+              }
+            },
+            ()-> deltaTicks >= 130000,
+            m_swerveDrivetrain)
+        );
+        /*
         .andThen(new WaitCommand(0.001))
         .andThen
         (
@@ -374,7 +484,8 @@ public class RobotContainer
             },
             ()-> (Math.abs(m_swerveDrivetrain.gyroYaw) >= 129),    //275000
             m_swerveDrivetrain)
-        )
+        );*/
+        /*
         .andThen(new WaitCommand(0.001))
         .andThen
         (
@@ -427,7 +538,7 @@ public class RobotContainer
             ()-> deltaTicks >= 157500,    //121000, was 175000
             m_swerveDrivetrain)
         )
-        .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
+        .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});*/
     }
   
   public Command substationCubePath()
