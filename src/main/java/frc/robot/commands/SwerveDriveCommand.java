@@ -58,9 +58,9 @@ public class SwerveDriveCommand extends CommandBase
 
     if(elevator.elevatorActive())
     {
-      Xj = 0.5 * Xj;
-      Yj = 0.5 * Yj;
-      Zj = 0.5 * Zj;
+      Xj = 0.375 * Xj;
+      Yj = 0.375 * Yj;
+      Zj = 0.375 * Zj;
     }
 
     // Min and max steering motor percent output
