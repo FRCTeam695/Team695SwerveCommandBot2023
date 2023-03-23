@@ -780,7 +780,7 @@ public class RobotContainer
 
           if(chargeStationState == 1)
           {
-            m_swerveDrivetrain.driveStraight(-0.60, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(-0.45, initialRobotYaw, initialTicks);
             if(deltaPitch > 16)
             {
               hasStartedAscent = true;
@@ -790,7 +790,7 @@ public class RobotContainer
 
           if(chargeStationState == 2)
           {
-            m_swerveDrivetrain.driveStraight(-0.18, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(-0.135, initialRobotYaw, initialTicks);
           }
           
           //SmartDashboard.putNumber("Charge Station State", chargeStationState);
