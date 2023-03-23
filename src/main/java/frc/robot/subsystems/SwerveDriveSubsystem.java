@@ -236,11 +236,11 @@ public class SwerveDriveSubsystem extends SubsystemBase
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
-    double deadband = 0.025;  // Originally 0.075
+    double deadband = 0;  // Originally 0.075
     double STR = adjXj; 
     if (STR > -deadband && STR < deadband) STR = 0;
 
-    double rotationDeadband = 0.0125;
+    double rotationDeadband = 0;
     double RCW = adjZj;
     if (RCW > -rotationDeadband && RCW < rotationDeadband) RCW = 0;
 
@@ -572,7 +572,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
     double R = Math.sqrt(L*L + W*W);
 
     // Convert joystick values to strafe, forward, and rotate
-    double deadband = 0.025;  // Originally 0.075
+    double deadband = 0;  // Originally 0.075
     double STR = adjXj; 
     if (STR > -deadband && STR < deadband) STR = 0;
 
