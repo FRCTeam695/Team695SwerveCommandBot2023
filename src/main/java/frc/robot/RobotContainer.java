@@ -332,214 +332,214 @@ public class RobotContainer
         m_swerveDrivetrain)
       )
       .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
-    }
+  }
 
-    public Command substation2ConeAuton()
-    {
-      return new InstantCommand(()-> {new WaitCommand(0.001);})
-        .andThen(new InstantCommand(() ->{currentMode.set(2);}))
-        .andThen
+  public Command substation2ConeAuton()
+  {
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+      .andThen(new InstantCommand(() ->{currentMode.set(2);}))
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 97500,
+          m_swerveDrivetrain)
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveSpline((0.01)*(getAlliance()), 0.40, initialTicks, 90);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 131000,
+          m_swerveDrivetrain)
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStrafe((-0.20)*(getAlliance()), initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 80000 || m_ElevatorIntakeSubsystem.getStallHold() == true,
+          m_swerveDrivetrain)
+        .raceWith
         (
-          new FunctionalCommand( 
-            ()-> 
-            {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 97500,
-            m_swerveDrivetrain)
+          new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
         )
-        .andThen
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveSpline((0.50)*(getAlliance()), 0, initialTicks, 0);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 20000,
+          m_swerveDrivetrain)
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStraight(-0.60, initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 130000,
+          m_swerveDrivetrain)
+      );
+      /*
+      .andThen(new WaitCommand(0.001))
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.rotateInPlace(135*getAlliance());
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> (Math.abs(m_swerveDrivetrain.gyroYaw) >= 129),    //275000
+          m_swerveDrivetrain)
+      );*/
+      /*
+      .andThen(new WaitCommand(0.001))
+      .andThen
+      (
+        new FunctionalCommand(
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveSpline((-0.15)*(getAlliance()), 0.15, initialTicks, 135*getAlliance());
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 60000,    //121000
+          m_swerveDrivetrain)
+        .raceWith
         (
-          new FunctionalCommand( 
-            ()-> 
-            {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveSpline((0.01)*(getAlliance()), 0.40, initialTicks, 90);
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 131000,
-            m_swerveDrivetrain)
+          new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
         )
-        .andThen
-        (
-          new FunctionalCommand( 
-            ()-> 
+      )
+      .andThen(new WaitCommand(0.001))
+      .andThen
+      (
+        new FunctionalCommand(
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveSpline((-0.50)*(getAlliance()), -0.50, initialTicks, 0);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
             {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveStrafe((-0.20)*(getAlliance()), initialRobotYaw, initialTicks);
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 80000 || m_ElevatorIntakeSubsystem.getStallHold() == true,
-            m_swerveDrivetrain)
-          .raceWith
-          (
-            new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
-          )
-        )
-        .andThen
-        (
-          new FunctionalCommand( 
-            ()-> 
-            {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveSpline((0.50)*(getAlliance()), 0, initialTicks, 0);
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 20000,
-            m_swerveDrivetrain)
-        )
-        .andThen
-        (
-          new FunctionalCommand( 
-            ()-> 
-            {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-              initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveStraight(-0.60, initialRobotYaw, initialTicks);
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 130000,
-            m_swerveDrivetrain)
-        );
-        /*
-        .andThen(new WaitCommand(0.001))
-        .andThen
-        (
-          new FunctionalCommand( 
-            ()-> 
-            {
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.rotateInPlace(135*getAlliance());
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> (Math.abs(m_swerveDrivetrain.gyroYaw) >= 129),    //275000
-            m_swerveDrivetrain)
-        );*/
-        /*
-        .andThen(new WaitCommand(0.001))
-        .andThen
-        (
-          new FunctionalCommand(
-            ()-> 
-            {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveSpline((-0.15)*(getAlliance()), 0.15, initialTicks, 135*getAlliance());
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 60000,    //121000
-            m_swerveDrivetrain)
-          .raceWith
-          (
-            new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
-          )
-        )
-        .andThen(new WaitCommand(0.001))
-        .andThen
-        (
-          new FunctionalCommand(
-            ()-> 
-            {
-              initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-            },
-            ()-> 
-            {
-              m_swerveDrivetrain.driveSpline((-0.50)*(getAlliance()), -0.50, initialTicks, 0);
-              deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
-            },
-            interrupted-> 
-            {
-              for(int lp=0; lp<4; lp++)
-              {
-                m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-                m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-              }
-            },
-            ()-> deltaTicks >= 157500,    //121000, was 175000
-            m_swerveDrivetrain)
-        )
-        .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});*/
-    }
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 157500,    //121000, was 175000
+          m_swerveDrivetrain)
+      )
+      .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});*/
+  }
   
   public Command substationCubePath()
   {
