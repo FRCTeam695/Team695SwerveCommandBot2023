@@ -272,8 +272,7 @@ public class RobotContainer
       .andThen(new WaitCommand(0.001))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
       .andThen(new WaitCommand(0.5))
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5))
-      .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5));
   }
 
   double initialRobotYaw;
@@ -361,6 +360,7 @@ public class RobotContainer
           },
           ()-> deltaTicks >= 97500,
           m_swerveDrivetrain)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
       )
       .andThen
       (
@@ -567,6 +567,7 @@ public class RobotContainer
           },
           ()-> deltaTicks >= 150370,
           m_swerveDrivetrain)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
       )
       .andThen(new WaitCommand(0.1))
       .andThen
@@ -618,6 +619,7 @@ public class RobotContainer
           },
           ()-> deltaTicks >= 150370,
           m_swerveDrivetrain)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
       )
       .andThen(new WaitCommand(0.1))
       .andThen
@@ -669,6 +671,7 @@ public class RobotContainer
           },
           ()-> deltaTicks >= 150370,
           m_swerveDrivetrain)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
       )
       .andThen(new WaitCommand(0.1))
       .andThen
@@ -720,6 +723,7 @@ public class RobotContainer
           },
           ()-> deltaTicks >= 150370,
           m_swerveDrivetrain)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
       )
       .andThen(new WaitCommand(0.1))
       .andThen
@@ -771,6 +775,7 @@ public class RobotContainer
         },
         ()-> deltaTicks >= 3760,
         m_swerveDrivetrain)
+      .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
     )
     .andThen(new WaitCommand(0.1))
     .andThen
