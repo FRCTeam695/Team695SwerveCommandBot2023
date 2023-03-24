@@ -374,7 +374,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
         kPMultiplier = 1;
       }
 
-      adjZj = gyroError * ((kPMultiplier) * 0.02);    //0.015
+      adjZj = gyroError * ((kPMultiplier) * 0.03);    //0.015
     }
 
     // Min and max steering motor percent output
