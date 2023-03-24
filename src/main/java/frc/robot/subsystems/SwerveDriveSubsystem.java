@@ -881,7 +881,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
   {
     gyroYaw = gyro.getYaw();
     SmartDashboard.putNumber("Yaw", gyroYaw);
-    SmartDashboard.putNumber("PITCH", gyro.getPitch());
+    SmartDashboard.putNumber("ROLL", gyro.getRoll());
 
     for(int lp=0; lp<4; lp++)
   {
