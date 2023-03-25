@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -335,6 +336,11 @@ public class RobotContainer
       .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});
   }
 
+  double xSpeed;
+  double ySpeed;
+  double ticksToCube;
+  BooleanSupplier notStalled = ()-> !m_ElevatorIntakeSubsystem.getStallHold();
+
   public Command substation2ConeAuton()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
@@ -438,7 +444,7 @@ public class RobotContainer
             }
           },
           ()-> deltaTicks >= 20000,
-          m_swerveDrivetrain)
+          m_swerveDrivetrain).unless(notStalled)
       )
       .andThen
       (
@@ -446,7 +452,7 @@ public class RobotContainer
           ()-> 
           {
             initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
-            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+            initialRobotYaw = 0;
           },
           ()-> 
           {
@@ -462,8 +468,92 @@ public class RobotContainer
             }
           },
           ()-> deltaTicks >= 130000,
-          m_swerveDrivetrain)
+          m_swerveDrivetrain).unless(notStalled)
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            if(m_VisionSubsystem.getPitch() >= -8)
+            {
+              ySpeed = -0.25;
+            }
+            else
+            {
+              ySpeed = 0;
+            }
+  
+            if(m_VisionSubsystem.getYaw() >= 22 || m_VisionSubsystem.hasTarget() == false)
+            {
+              xSpeed = -0.15;
+            }
+            else
+            {
+              xSpeed = 0;
+            }
+
+            m_swerveDrivetrain.driveSpline(xSpeed * (getAlliance()), ySpeed, initialTicks, 0);
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> (m_VisionSubsystem.getPitch() <= -7),
+        m_swerveDrivetrain).unless(notStalled)
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStraight(-0.2, initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 7500,
+          m_swerveDrivetrain).unless(notStalled)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem)).unless(notStalled)
+      )
+      /*
+      .andThen
+      (
+          new InstantCommand(() -> 
+          {
+            if(overShootCube == false)
+            {
+              new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5);
+            }
+            else
+            {
+              return;
+            }
+          })
       );
+      */
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1).unless(notStalled))
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
       /*
       .andThen(new WaitCommand(0.001))
       .andThen
