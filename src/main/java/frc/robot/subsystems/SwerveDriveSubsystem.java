@@ -22,6 +22,8 @@ import com.kauailabs.navx.frc.*;
 
 public class SwerveDriveSubsystem extends SubsystemBase 
 {
+  private final ElevatorSubsystem elevator;
+
   // Navx2 gyro
   public static AHRS gyro = new AHRS(SPI.Port.kMXP);
 
@@ -131,8 +133,10 @@ public class SwerveDriveSubsystem extends SubsystemBase
     System.out.println("End CancoderHome()");
   }
 
-  public SwerveDriveSubsystem() 
+  public SwerveDriveSubsystem(ElevatorSubsystem elevator) 
   {
+    this.elevator = elevator;
+
     gyro.calibrate();
     while(gyro.isCalibrating())
     {}
@@ -220,6 +224,12 @@ public class SwerveDriveSubsystem extends SubsystemBase
       }
 
       adjZj = gyroError * ((kPMultiplier) * 0.02);    //0.015
+    }
+
+    if(elevator.elevatorActive())
+    {
+      adjXj = 0.375 * adjXj;
+      adjZj = 0.375 * adjZj;
     }
 
     // Min and max steering motor percent output
@@ -375,6 +385,12 @@ public class SwerveDriveSubsystem extends SubsystemBase
       }
 
       adjZj = gyroError * ((kPMultiplier) * 0.03);    //0.015
+    }
+
+    if(elevator.elevatorActive())
+    {
+      adjYj = 0.375 * adjYj;
+      adjZj = 0.375 * adjZj;
     }
 
     // Min and max steering motor percent output
@@ -557,6 +573,13 @@ public class SwerveDriveSubsystem extends SubsystemBase
       adjZj = 0;
     }
     */
+
+    if(elevator.elevatorActive())
+    {
+      adjXj = 0.375 * adjXj;
+      adjYj = 0.375 * adjYj;
+      adjZj = 0.375 * adjZj;
+    }
 
     // Min and max steering motor percent output
     double MinSteer = -1.0;

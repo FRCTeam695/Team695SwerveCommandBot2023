@@ -114,10 +114,10 @@ public class RobotContainer
   private final VisionSubsystem m_VisionSubsystem = new VisionSubsystem();
 
   // Subsystems:
-  private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem();
   private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem = new ElevatorIntakeSubsystem();
   private final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
   private final LEDSubsystem m_LEDSubsystem = new LEDSubsystem();
+  private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem(m_ElevatorSubsystem);
   
   // Commands:
 //  private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
