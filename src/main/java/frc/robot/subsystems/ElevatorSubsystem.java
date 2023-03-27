@@ -28,7 +28,7 @@ public class ElevatorSubsystem extends SubsystemBase
 
   private double pos;
 
-  private double[] levelTicks = {0, 10000, 54000, 80000, 86000};
+  private double[] levelTicks = {0, 10000, 54000, 80000, 85500}; // 86000
 
   private Timer et = new Timer();
 
