@@ -13,6 +13,7 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
 public class ElevatorIntakeSubsystem extends SubsystemBase 
@@ -118,6 +119,11 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     running = true;
     m_intake.set(runspeed);
 
+    if(DriverStation.isAutonomous())
+    {
+      Timer.delay(0.1);
+    }
+
   }
 
   public void stop()
@@ -139,10 +145,16 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
   public void periodic() 
   {
     double currentposition;
+    double stallTimeout = 0.5;
+
+    if(DriverStation.isAutonomous())
+    {
+      stallTimeout = 0.1;
+    }
 
     if (running == true)
     {
-      if (stalltimer.get() > 0.500)
+      if (stalltimer.get() > stallTimeout)
       {
         currentposition = m_encoder.getPosition();
         if (Math.abs(currentposition - lastposition) < 2)
