@@ -339,12 +339,16 @@ public class RobotContainer
   double xSpeed;
   double ySpeed;
   double ticksToCube;
-  BooleanSupplier notStalled = ()-> !m_ElevatorIntakeSubsystem.getStallHold();
+  boolean gotCube = false;
 
   public Command substation2ConeAuton()
-  {
+  { 
     return new InstantCommand(()-> {new WaitCommand(0.001);})
+
+      // set mode to cube
       .andThen(new InstantCommand(() ->{currentMode.set(2);}))
+
+      // move downfield from grid
       .andThen
       (
         new FunctionalCommand( 
@@ -368,8 +372,13 @@ public class RobotContainer
           },
           ()-> deltaTicks >= 97500,
           m_swerveDrivetrain)
+
+        // lower elevator while moving downfield
         .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
+
       )
+
+      // continue moving downfield with 90 degree CW rotation
       .andThen
       (
         new FunctionalCommand( 
@@ -394,6 +403,8 @@ public class RobotContainer
           ()-> deltaTicks >= 131000,
           m_swerveDrivetrain)
       )
+
+      // move towards cube to attempt intake (terminates if we acquire cube or move too far)
       .andThen
       (
         new FunctionalCommand( 
@@ -406,6 +417,9 @@ public class RobotContainer
           {
             m_swerveDrivetrain.driveStrafe((-0.20)*(getAlliance()), initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+            gotCube = m_ElevatorIntakeSubsystem.getStallHold();
+            System.out.println(deltaTicks);
+            System.out.println(gotCube);
           },
           interrupted-> 
           {
@@ -415,13 +429,15 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> deltaTicks >= 80000 || m_ElevatorIntakeSubsystem.getStallHold() == true,
+          ()-> deltaTicks >= 70000 || gotCube == true,
           m_swerveDrivetrain)
         .raceWith
         (
           new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
         )
       )
+      .andThen(new WaitCommand(0.250).unless(() -> !gotCube))
+      // if we have cube, turn 90 CCW and start towards grid
       .andThen
       (
         new FunctionalCommand( 
@@ -444,8 +460,10 @@ public class RobotContainer
             }
           },
           ()-> deltaTicks >= 20000,
-          m_swerveDrivetrain).unless(notStalled)
+          m_swerveDrivetrain).unless(() -> !gotCube)
       )
+
+      // if we have cube, continue towards grid
       .andThen
       (
         new FunctionalCommand( 
@@ -468,8 +486,10 @@ public class RobotContainer
             }
           },
           ()-> deltaTicks >= 130000,
-          m_swerveDrivetrain).unless(notStalled)
+          m_swerveDrivetrain).unless(() -> !gotCube)
       )
+
+      // if we have cube, we should now be in apriltag range, so align to the tag
       .andThen
       (
         new FunctionalCommand( 
@@ -509,8 +529,10 @@ public class RobotContainer
             }
           },
           ()-> (m_VisionSubsystem.getPitch() <= -7),
-        m_swerveDrivetrain).unless(notStalled)
+        m_swerveDrivetrain).unless(() -> !gotCube)
       )
+
+      // if we have cube, finish move up to grid and extend elevator
       .andThen
       (
         new FunctionalCommand( 
@@ -533,10 +555,16 @@ public class RobotContainer
             }
           },
           ()-> deltaTicks >= 7500,
-          m_swerveDrivetrain).unless(notStalled)
-        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem)).unless(notStalled)
+          m_swerveDrivetrain).unless(() -> !gotCube)
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem)).unless(() -> !gotCube)
       )
-      /*
+
+      // if we have cube, discharge it
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1).unless(() -> !gotCube))
+
+      // if we have (had) cube, lower elevator
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem).unless(() -> !gotCube));
+  }
       .andThen
       (
           new InstantCommand(() -> 
