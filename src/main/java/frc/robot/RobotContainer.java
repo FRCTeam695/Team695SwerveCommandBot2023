@@ -359,7 +359,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStraight(0.60, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(0.70, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -415,7 +415,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStrafe((-0.20)*(getAlliance()), initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStrafe((-0.25)*(getAlliance()), initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
             gotCube = m_ElevatorIntakeSubsystem.getStallHold();
             System.out.println(deltaTicks);
@@ -474,7 +474,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveStraight(-0.60, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(-0.80, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
