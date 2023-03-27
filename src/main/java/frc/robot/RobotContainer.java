@@ -201,6 +201,7 @@ public class RobotContainer
     m_pathChooser.addOption("Score Table Cone Path", scoreTableConePath());
     //m_pathChooser.addOption("Substation Cube PIROUETTE", substationCubePathPirouette());
     m_pathChooser.addOption("Substation 2 Cone Auton", substation2ConeAuton());
+    m_pathChooser.addOption("Substation 1.5 Cone Auton", substationOneAndAHalfConeAuton());
     SmartDashboard.putData("Auton Routine", m_pathChooser);
 
     m_secChooser.setDefaultOption("0", 0.0);
@@ -576,58 +577,26 @@ public class RobotContainer
       // if we have (had) cube, lower elevator
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem).unless(() -> !gotCube));
   }
-      .andThen
-      (
-          new InstantCommand(() -> 
-          {
-            if(overShootCube == false)
-            {
-              new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5);
-            }
-            else
-            {
-              return;
-            }
-          })
-      );
-      */
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1).unless(notStalled))
-      .andThen(new RunElevatorCommand(m_ElevatorSubsystem));
-      /*
-      .andThen(new WaitCommand(0.001))
+
+  public Command substationOneAndAHalfConeAuton()
+  { 
+    return new InstantCommand(()-> {new WaitCommand(0.001);})
+
+      // set mode to cube
+      .andThen(new InstantCommand(() ->{currentMode.set(2);}))
+
+      // move downfield from grid
       .andThen
       (
         new FunctionalCommand( 
           ()-> 
           {
-          },
-          ()-> 
-          {
-            m_swerveDrivetrain.rotateInPlace(135*getAlliance());
-          },
-          interrupted-> 
-          {
-            for(int lp=0; lp<4; lp++)
-            {
-              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-            }
-          },
-          ()-> (Math.abs(m_swerveDrivetrain.gyroYaw) >= 129),    //275000
-          m_swerveDrivetrain)
-      );*/
-      /*
-      .andThen(new WaitCommand(0.001))
-      .andThen
-      (
-        new FunctionalCommand(
-          ()-> 
-          {
             initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveSpline((-0.15)*(getAlliance()), 0.15, initialTicks, 135*getAlliance());
+            m_swerveDrivetrain.driveStraight(0.70, initialRobotYaw, initialTicks);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -638,24 +607,99 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> deltaTicks >= 60000,    //121000
+          ()-> deltaTicks >= 97500,
+          m_swerveDrivetrain)
+
+        // lower elevator while moving downfield
+        .alongWith(new RunElevatorCommand(m_ElevatorSubsystem))
+
+      )
+
+      // continue moving downfield with 90 degree CW rotation
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveSpline((0.01)*(getAlliance()), 0.40, initialTicks, 90*(getAlliance()));
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> (getAlliance() == 1 &&  deltaTicks >= 134000) || (getAlliance() == -1 && deltaTicks >= 104000),
+          m_swerveDrivetrain)
+      )
+
+      // move towards cube to attempt intake (terminates if we acquire cube or move too far)
+      .andThen
+      (
+        new FunctionalCommand( 
+          ()-> 
+          {
+            initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
+          },
+          ()-> 
+          {
+            m_swerveDrivetrain.driveStrafe((-0.25)*(getAlliance()), initialRobotYaw, initialTicks);
+            deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> deltaTicks >= 60000,
           m_swerveDrivetrain)
         .raceWith
         (
           new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1)
         )
       )
-      .andThen(new WaitCommand(0.001))
       .andThen
       (
         new FunctionalCommand(
+          ()-> {},
+          ()-> 
+          {
+            m_swerveDrivetrain.rotateInPlace(0);
+          },
+          interrupted-> 
+          {
+            for(int lp=0; lp<4; lp++)
+            {
+              m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
+              m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
+            }
+          },
+          ()-> (getAlliance() == 1 && m_swerveDrivetrain.gyroYaw <= 5) || (getAlliance() == -1 && m_swerveDrivetrain.gyroYaw >= -5),
+          m_swerveDrivetrain)
+      )
+      .andThen
+      (
+        new FunctionalCommand( 
           ()-> 
           {
             initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+            initialRobotYaw =  m_swerveDrivetrain.gyroYaw;
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveSpline((-0.50)*(getAlliance()), -0.50, initialTicks, 0);
+            m_swerveDrivetrain.driveSpline((-0.20)*(getAlliance()), -0.40, initialTicks, 0);
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -666,10 +710,9 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> deltaTicks >= 157500,    //121000, was 175000
+          ()-> deltaTicks >= 80000,
           m_swerveDrivetrain)
-      )
-      .andThen(()-> {initialTicks = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();});*/
+      );
   }
   
   public Command substationCubePath()
