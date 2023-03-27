@@ -944,13 +944,13 @@ public class RobotContainer
     return new WaitCommand(0.001);
   }
 
-  double initialRobotRoll;
+  double initialRobotAngle;
   boolean hasStartedAscent = false;
-  double deltaRoll;
+  double deltaAngle;
   double chargeStationState = 0;
-  double averageRoll;
-  double[] rollArray = new double[5];
-  // Using gyro roll
+  double averageAngle;
+  double[] angleArray = new double[5];
+  // Using gyro pitch or roll depending on navx2 orientation
   public Command dynamicEngageChargeStation()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
@@ -961,35 +961,35 @@ public class RobotContainer
         ()->           
         {
           chargeStationState = 1;
-          initialRobotRoll =  m_swerveDrivetrain.gyro.getRoll();
+          initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
 //          SmartDashboard.putNumber("Charge Station State", chargeStationState);
         },
         ()->
         {          
           for(int i = 3; i >= 0; i--)
           {
-            rollArray[i+1] = rollArray[i];
+            angleArray[i+1] = angleArray[i];
           }
 
-          rollArray[0] = m_swerveDrivetrain.gyro.getRoll();
+          angleArray[0] = m_swerveDrivetrain.gyro.getPitch();
 
           double total = 0;
 
-          for(int i=0; i < rollArray.length; i++)
+          for(int i=0; i < angleArray.length; i++)
           {
-            total = total + rollArray[i];
+            total = total + angleArray[i];
           }
 
-          averageRoll = total / rollArray.length;  
+          averageAngle = total / angleArray.length;  
           
-          SmartDashboard.putNumber("AverageRoll", averageRoll);
+          SmartDashboard.putNumber("AverageAngle", averageAngle);
 
-          deltaRoll = Math.abs(initialRobotRoll - averageRoll);
+          deltaAngle = Math.abs(initialRobotAngle - averageAngle);
 
           if(chargeStationState == 1)
           {
-            m_swerveDrivetrain.driveStraight(-0.45, initialRobotYaw, initialTicks);
-            if(deltaRoll > 16)
+            m_swerveDrivetrain.driveStraight(-0.50, initialRobotYaw, initialTicks);
+            if(deltaAngle > 16)
             {
               hasStartedAscent = true;
               chargeStationState = 2;
@@ -998,7 +998,7 @@ public class RobotContainer
 
           if(chargeStationState == 2)
           {
-            m_swerveDrivetrain.driveStraight(-0.135, initialRobotYaw, initialTicks);
+            m_swerveDrivetrain.driveStraight(-0.16, initialRobotYaw, initialTicks);
           }
           
           //SmartDashboard.putNumber("Charge Station State", chargeStationState);
@@ -1014,7 +1014,7 @@ public class RobotContainer
           //SmartDashboard.putNumber("Charge Station State", chargeStationState);
           hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaRoll <= 11,
+        ()-> hasStartedAscent == true && deltaAngle <= 11,
         m_swerveDrivetrain)
     );
   }
