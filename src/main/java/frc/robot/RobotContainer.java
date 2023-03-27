@@ -389,7 +389,7 @@ public class RobotContainer
           },
           ()-> 
           {
-            m_swerveDrivetrain.driveSpline((0.01)*(getAlliance()), 0.40, initialTicks, 90);
+            m_swerveDrivetrain.driveSpline((0.01)*(getAlliance()), 0.40, initialTicks, 90*(getAlliance()));
             deltaTicks = Math.abs(initialTicks - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
           },
           interrupted-> 
@@ -400,7 +400,7 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> deltaTicks >= 131000,
+          ()-> (getAlliance() == 1 &&  deltaTicks >= 134000) || (getAlliance() == -1 && deltaTicks >= 104000),
           m_swerveDrivetrain)
       )
 
@@ -459,7 +459,7 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> deltaTicks >= 20000,
+          ()-> (getAlliance() == 1 && deltaTicks >= 10000) || (getAlliance() == -1 && deltaTicks >= 15000),
           m_swerveDrivetrain).unless(() -> !gotCube)
       )
 
@@ -509,16 +509,30 @@ public class RobotContainer
               ySpeed = 0;
             }
   
-            if(m_VisionSubsystem.getYaw() >= 22 || m_VisionSubsystem.hasTarget() == false)
+            if(getAlliance() == 1)
             {
-              xSpeed = -0.15;
+              if(m_VisionSubsystem.getYaw() >= 22 || m_VisionSubsystem.hasTarget() == false)
+              {
+                xSpeed = -0.15;
+              }
+              else
+              {
+                xSpeed = 0;
+              }
             }
             else
             {
-              xSpeed = 0;
+              if(m_VisionSubsystem.getYaw() <= 21 && m_VisionSubsystem.hasTarget() == true)
+              {
+                xSpeed = 0.11;
+              }
+              else
+              {
+                xSpeed = 0;
+              }
             }
 
-            m_swerveDrivetrain.driveSpline(xSpeed * (getAlliance()), ySpeed, initialTicks, 0);
+            m_swerveDrivetrain.driveSpline(xSpeed, ySpeed, initialTicks, 0);
           },
           interrupted-> 
           {
