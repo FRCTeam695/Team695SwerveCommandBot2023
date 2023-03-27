@@ -48,7 +48,6 @@ public class RobotContainer
   private final JoystickButton m_Pilot_A = new JoystickButton(m_Pilot_Controller, 1);
   private final JoystickButton m_Pilot_B = new JoystickButton(m_Pilot_Controller, 2);
   private final JoystickButton m_Pilot_X = new JoystickButton(m_Pilot_Controller, 3);
-// flapper  private final JoystickButton m_Pilot_Y = new JoystickButton(m_Pilot_Controller, 4);
   private final JoystickButton m_Pilot_LeftBumper = new JoystickButton(m_Pilot_Controller, 5);
   private final JoystickButton m_Pilot_RightBumper = new JoystickButton(m_Pilot_Controller, 6);
 // elevator  private final JoystickButton m_Pilot_BACK = new JoystickButton(m_Pilot_Controller, 7);
