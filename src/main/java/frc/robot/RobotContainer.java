@@ -272,7 +272,7 @@ public class RobotContainer
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1).withTimeout(3))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
       .andThen(new WaitCommand(0.5))
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5));
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1));
   }
 
   double initialRobotYaw;
@@ -397,7 +397,7 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> (getAlliance() == 1 &&  deltaTicks >= 134000) || (getAlliance() == -1 && deltaTicks >= 104000),
+          ()-> (getAlliance() == 1 &&  deltaTicks >= 139000) || (getAlliance() == -1 && deltaTicks >= 114000),
           m_swerveDrivetrain)
       )
 
@@ -542,7 +542,7 @@ public class RobotContainer
           ()-> (m_VisionSubsystem.getPitch() <= -7),
         m_swerveDrivetrain).unless(() -> !gotCube)
       )
-
+/*
       // if we have cube, finish move up to grid and extend elevator
       .andThen
       (
@@ -566,15 +566,21 @@ public class RobotContainer
             }
           },
           ()-> deltaTicks >= 7500,
-          m_swerveDrivetrain).unless(() -> !gotCube)
+          m_swerveDrivetrain).withTimeout(2).unless(() -> !gotCube)
         .alongWith(new RunElevatorCommand(m_ElevatorSubsystem)).unless(() -> !gotCube)
-      )
+      )*/
+ 
+      .andThen(new RunElevatorCommand(m_ElevatorSubsystem).unless(() -> !gotCube))
+
+      .andThen(new WaitCommand(2))
 
       // if we have cube, discharge it
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1).unless(() -> !gotCube))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).unless(() -> !gotCube));
+
+      //.andThen(new WaitCommand(1));
 
       // if we have (had) cube, lower elevator
-      .andThen(new RunElevatorCommand(m_ElevatorSubsystem).unless(() -> !gotCube));
+      //.andThen(new RunElevatorCommand(m_ElevatorSubsystem).unless(() -> !gotCube));
   }
 
   public Command substationOneAndAHalfConeAuton()
@@ -636,7 +642,7 @@ public class RobotContainer
               m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
             }
           },
-          ()-> (getAlliance() == 1 &&  deltaTicks >= 134000) || (getAlliance() == -1 && deltaTicks >= 104000),
+          ()-> (getAlliance() == 1 &&  deltaTicks >= 139000) || (getAlliance() == -1 && deltaTicks >= 114000),
           m_swerveDrivetrain)
       )
 
@@ -1095,7 +1101,7 @@ public class RobotContainer
           //SmartDashboard.putNumber("Charge Station State", chargeStationState);
           hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaAngle <= 11,
+        ()-> hasStartedAscent == true && deltaAngle <= 12,
         m_swerveDrivetrain)
     );
   }
