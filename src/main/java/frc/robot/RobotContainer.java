@@ -540,7 +540,7 @@ public class RobotContainer
             }
           },
           ()-> (m_VisionSubsystem.getPitch() <= -7),
-        m_swerveDrivetrain).withTimeout(2).unless(() -> !gotCube)
+        m_swerveDrivetrain).withTimeout(3).unless(() -> !gotCube)
       )
 /*
       // if we have cube, finish move up to grid and extend elevator
@@ -572,7 +572,7 @@ public class RobotContainer
  
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem).unless(() -> !gotCube))
 
-      .andThen(new WaitCommand(2))
+      .andThen(new WaitCommand(1))
 
       // if we have cube, discharge it
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).unless(() -> !gotCube));
