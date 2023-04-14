@@ -31,6 +31,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
   public DigitalInput robotDigitalInput = new DigitalInput(9);
 
   public double gyroYaw;
+  public double gyroAngle;
 
   // Cancoders
   public static WPI_CANCoder cancoder[] =
@@ -69,16 +70,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
   public static double[] defaultrotation = { -1, -1, -1, 1 };
   //public static double[] defaultrotation = new double[4];
 
-
-  // Cancoder pid controllers
-  public static PIDController cancoderpid[] =
-  {
-    new PIDController(0.015, 0.00, 0.0001),
-    new PIDController(0.015, 0.00, 0.0001),
-    new PIDController(0.015, 0.00, 0.0001),
-    new PIDController(0.015, 0.00, 0.0001)
-  };
-
   // Talon encoder pid controllers (TODO:  move these directly into the falcon 500's)
   public static PIDController talonpid[] =
   {
@@ -92,28 +83,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
   {
     if (val > -0.01 && val < 0.01) val = 0.0;
     return(val);
-  }
-
-  // Cancoder homing method
-  // CancoderHome() takes 1 second to home the swerve steer wheels using the cancoders
-  public static void CancoderHomeOld()
-  {
-    System.out.println("Begin CancoderHome()");
-    for(int t=0; t<100; t++)
-    {
-      for(int lp=0; lp<4; lp++)
-      {
-        double co = MathUtil.clamp(cancoderpid[lp].calculate(cancoder[lp].getAbsolutePosition(), cancoderoffset[lp]), -1, 1);
-        steer[lp].set(ControlMode.PercentOutput, -1 * co);
-      }
-      Timer.delay(0.01);
-    }
-    for(int lp=0; lp<4; lp++)
-    {
-      steer[lp].setSelectedSensorPosition(0);
-      talonpid[lp].reset();
-    }
-    System.out.println("End CancoderHome()");
   }
 
   // Cancoder homing method
@@ -140,8 +109,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
     gyro.calibrate();
     while(gyro.isCalibrating())
     {}
-    System.out.println("RUNNING SWERVE SUBSYSTEM CONSTRUCTOR");
-
+    
     // current limit drive falcons
     SupplyCurrentLimitConfiguration falconlimit = new SupplyCurrentLimitConfiguration();
     falconlimit.enable = true;
@@ -176,6 +144,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
 
     }
     gyro.reset();
+    gyro.zeroYaw();
     //SmartDashboard.putData(this);
 
     /*
@@ -205,7 +174,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
     }
     */
   }
-
+  
   public void driveStrafe(double adjXj, double initialRobotYaw, double initialTicks)
   {
     double gyroError = Math.abs(initialRobotYaw) - Math.abs(gyroYaw);
@@ -361,8 +330,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
         // Send drive output to falcon
         drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
 
-        // Convenient place to do cancoder home control loop cleanup
-        cancoderpid[lp].reset();
       }
     }
   }
@@ -520,8 +487,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
         // Send drive output to falcon
         drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
 
-        // Convenient place to do cancoder home control loop cleanup
-        cancoderpid[lp].reset();
       }
     }
 
@@ -710,8 +675,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
         // Send drive output to falcon
         drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
 
-        // Convenient place to do cancoder home control loop cleanup
-        cancoderpid[lp].reset();
       }
     }
 
@@ -883,8 +846,6 @@ public class SwerveDriveSubsystem extends SubsystemBase
         // Send drive output to falcon
         drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
 
-        // Convenient place to do cancoder home control loop cleanup
-        cancoderpid[lp].reset();
       }
     }
 
@@ -898,6 +859,158 @@ public class SwerveDriveSubsystem extends SubsystemBase
       }
     }
   }
+
+
+  public void driveSwerve(double Xj, double Yj, double Zj, boolean fieldorient)
+  {
+    // Min and max steering motor percent output
+    double MinSteer = -1.0;
+    double MaxSteer = 1.0;
+    
+    // Temporary variables for setpoint and control output
+    double sp;
+    double co;
+    
+    // Chassis dimensions
+    double L = 21.5;
+    double W = 24.5;
+    double R = Math.sqrt(L*L + W*W);
+    
+    // Convert Xj, Yj, and Zj to strafe, forward, and rotate
+    double STR = Xj;   
+    double FWD = -Yj;
+    double RCW = Zj;
+    
+    // Limit rotate speed
+    RCW /= 2;
+    
+    // adjust for field oriented drive
+    if (fieldorient == true)
+    {
+      double gyro_rad = (gyroYaw + 180) / 180 * Math.PI;
+      double tFWD = FWD * Math.cos(gyro_rad) + STR * Math.sin(gyro_rad);
+      STR = -FWD * Math.sin(gyro_rad) + STR * Math.cos(gyro_rad);
+      FWD = tFWD;
+    }
+    
+    // Compute temporary work variables
+    double A = nearzero(STR + RCW * (L/R));
+    double B = nearzero(STR - RCW * (L/R));
+    double C = nearzero(FWD + RCW * (W/R));
+    double D = nearzero(FWD - RCW * (W/R));
+    
+    // Compute angles (range is -180 to 180 degrees)
+    double[] angle =
+    {
+      nearzero(Math.atan2(A,D) * 180 / Math.PI),
+      nearzero(Math.atan2(A,C) * 180 / Math.PI),
+      nearzero(Math.atan2(B,C) * 180 / Math.PI),
+      nearzero(Math.atan2(B,D) * 180 / Math.PI)
+    };
+    
+    // Compute speeds
+    double[] speed =
+    {
+      Math.sqrt(A*A + D*D),
+      Math.sqrt(A*A + C*C),
+      Math.sqrt(B*B + C*C),
+      Math.sqrt(B*B + D*D)
+    };
+    
+    // Set default drive rotations
+    double[] rotation =
+    {
+      defaultrotation[0],
+      defaultrotation[1],
+      defaultrotation[2],
+      defaultrotation[3]
+    };
+    
+    // Normalize speeds for motor controllers (range is 0 to 1)
+    double max = 0;
+    for(int lp=0; lp<4; lp++) if (speed[lp] > max) max = speed[lp];
+    if (max > 1) for(int lp=0; lp<4; lp++) speed[lp] /= max;
+        
+    // Only run motors if nonzero speed(s)
+    if (max != 0)
+    {
+    
+      // Loop to compute and apply steering angle and drive power to each motor
+      for(int lp=0; lp<4; lp++)
+      {
+    
+        // Get target steering angle (setpoint) for this corner
+        // (Invert because falcons are upside down)
+        sp = angle[lp];
+    
+        // get current steering angle (process variable) for this corner
+        double ec = steer[lp].getSelectedSensorPosition(0);
+        double pv = (ec % Constants.talon_mk4i_360_count) / Constants.talon_mk4i_360_count * 360;
+        if (pv <= -180)
+        {
+          pv += 360;
+        }
+        else if (pv >= 180)
+        {
+          pv -= 360;
+        }
+    
+        // Compute steering angle change
+        double delta = Math.abs(sp - pv);
+    
+        // Adjust steering angle for optimized turn
+        if (delta > 90 && delta < 270)
+        {
+          rotation[lp] = -defaultrotation[lp];
+          sp = (sp >= 0) ? sp - 180 : sp + 180;
+        }
+    
+        // Adjust angle orientation for PID depending on direction of setpoint
+        if (sp < -135 || sp > 135)
+        {
+          if (sp < 0)
+          {
+            sp += 360;
+          }
+          if (pv < 0)
+          {
+            pv += 360;
+          }
+        }
+    
+        co = MathUtil.clamp(talonpid[lp].calculate(pv, sp), MinSteer, MaxSteer);
+    
+        // Send steering output to falcon
+        steer[lp].set(ControlMode.PercentOutput, co);
+    
+        // Send drive output to falcon
+        drive[lp].set(ControlMode.PercentOutput, rotation[lp] * speed[lp]);
+    
+      }
+    }
+    
+    // Otherwise stop motors
+    else
+    {
+      for(int lp=0; lp<4; lp++)
+      {
+        steer[lp].set(ControlMode.PercentOutput, 0);
+        drive[lp].set(ControlMode.PercentOutput, 0);
+      }
+    }
+    
+        /*
+        System.out.printf("%10.2f %10.2f %10.2f %10.2f %10.2f %10.2f\n",
+          Xj, Yj,
+          rotation[0] * speed[0],
+          rotation[1] * speed[1],
+          rotation[2] * speed[2],
+          rotation[3] * speed[3]
+        );
+        */
+    
+  }
+
 
   @Override
   public void periodic() 
