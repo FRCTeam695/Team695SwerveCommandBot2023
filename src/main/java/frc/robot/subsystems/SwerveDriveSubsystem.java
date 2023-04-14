@@ -1016,8 +1016,11 @@ public class SwerveDriveSubsystem extends SubsystemBase
   public void periodic() 
   {
     gyroYaw = gyro.getYaw();
-    SmartDashboard.putNumber("Yaw", gyroYaw);
+    gyroAngle = gyro.getAngle();
+    SmartDashboard.putNumber("YAW", gyroYaw);
     SmartDashboard.putNumber("ROLL", gyro.getRoll());
+    SmartDashboard.putNumber("ANGLE", gyroAngle);
+    SmartDashboard.putNumber("PITCH", gyro.getPitch());
 
     for(int lp=0; lp<4; lp++)
   {
@@ -1027,3 +1030,4 @@ public class SwerveDriveSubsystem extends SubsystemBase
   }
 
 }
+  
