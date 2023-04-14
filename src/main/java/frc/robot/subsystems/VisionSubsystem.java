@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-//import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonCamera;
 //import org.photonvision.targeting.PhotonPipelineResult;
 //import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -16,13 +16,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionSubsystem extends SubsystemBase {
 
-  //PhotonCamera camera = new PhotonCamera("OV5647");
-//  PhotonTrackedTarget target;
+  PhotonCamera pv_camera = new PhotonCamera("OV5647");
+  PhotonCamera life_camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
 
   boolean hasTargets;
   double pitch;
   double yaw;
   double area;
+
+  double [] avg_pitch = {0, 0, 0, 0, 0};
+  double [] avg_yaw = {0, 0, 0, 0, 0};
+  double [] avg_area = {0, 0, 0, 0, 0};
+
+  private int detectorPipeline;
 
   public VisionSubsystem() 
   {
@@ -48,6 +54,12 @@ public class VisionSubsystem extends SubsystemBase {
     }
   }*/
 
+  public void setPipeline(int pipeline)
+  {
+    detectorPipeline = pipeline;
+    NetworkTableInstance.getDefault().getTable("limelight").getEntry("pipeline").setNumber(detectorPipeline);
+  }
+
   public boolean hasTarget()
   {
     boolean ret = false;
@@ -59,6 +71,113 @@ public class VisionSubsystem extends SubsystemBase {
     }
     return(ret);
   }
+
+  // Methods for the game piece camera
+
+  public boolean pv_hasTarget()
+  {
+    var result = pv_camera.getLatestResult();
+    return(result.hasTargets());
+  }
+
+  public double pv_getYaw()
+  {
+    var result = pv_camera.getLatestResult();
+    double ret = 0;
+    if (result.hasTargets() == true)
+    {
+      ret = result.getBestTarget().getYaw();
+    }
+    else
+    {
+      ret = 0;
+    }
+    return(ret);
+  }
+
+  public double pv_getPitch()
+  {
+    var result = pv_camera.getLatestResult();
+    double ret = 0;
+    if (result.hasTargets() == true)
+    {
+      ret = result.getBestTarget().getPitch();
+    }
+    else
+    {
+      ret = 0;
+    }
+    return(ret);
+  }
+
+  public double pv_getArea()
+  {
+    var result = pv_camera.getLatestResult();
+    double ret = 0;
+    if (result.hasTargets() == true)
+    {
+      ret = result.getBestTarget().getArea();
+    }
+    else
+    {
+      ret = 0;
+    }
+    return(ret);
+  }
+
+  // Methods for the lifecam
+
+  public boolean lifecam_hasTarget()
+  {
+    var result = life_camera.getLatestResult();
+    return(result.hasTargets());
+  }
+
+  public double lifecam_getYaw()
+  {
+    var result = life_camera.getLatestResult();
+    double ret = 0;
+    if (result.hasTargets() == true)
+    {
+      ret = result.getBestTarget().getYaw();
+    }
+    else
+    {
+      ret = 0;
+    }
+    return(ret);
+  }
+
+  public double lifecam_getPitch()
+  {
+    var result = life_camera.getLatestResult();
+    double ret = 0;
+    if (result.hasTargets() == true)
+    {
+      ret = result.getBestTarget().getPitch();
+    }
+    else
+    {
+      ret = 0;
+    }
+    return(ret);
+  }
+
+  public double lifecam_getArea()
+  {
+    var result = life_camera.getLatestResult();
+    double ret = 0;
+    if (result.hasTargets() == true)
+    {
+      ret = result.getBestTarget().getArea();
+    }
+    else
+    {
+      ret = 0;
+    }
+    return(ret);
+  }
+
 
   public double getPitch()
   {
@@ -78,23 +197,58 @@ public class VisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() 
   {
-    if (hasTarget() == true)
+    int lp;
+    double tmp;
+
+
+    boolean tg = hasTarget();
+
+    if (tg == true)
     {
-      yaw = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-      pitch = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
-      area = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
-    
+
+      tmp = 0;
+      for(lp=0; lp<4; lp++)
+      {
+        avg_yaw[lp] = avg_yaw[lp+1];
+        tmp += avg_yaw[lp];
+      }
+      avg_yaw[4] = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
+      yaw = tmp / 5;
+
+      tmp = 0;
+      for(lp=0; lp<4; lp++)
+      {
+        avg_pitch[lp] = avg_pitch[lp+1];
+        tmp += avg_pitch[lp];
+      }
+      avg_pitch[4] = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+      pitch = tmp / 5;
+
+      tmp = 0;
+      for(lp=0; lp<4; lp++)
+      {
+        avg_area[lp] = avg_area[lp+1];
+        tmp += avg_area[lp];
+      }
+      avg_area[4] = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
+      area = tmp / 5;
+
     }
     else
     {
       yaw = 0;
       pitch = 0;
       area = 0;
+
+      for(lp=5; lp<4; lp++)
+      {
+        avg_pitch[lp] = avg_yaw[lp] = avg_area[lp] = 0;
+      }
     }
 
-//    SmartDashboard.putBoolean("LT", hasTarget());
-//    SmartDashboard.putNumber("LTPitch", pitch);
-//    SmartDashboard.putNumber("LTYaw", yaw);
+//    SmartDashboard.putBoolean("LT", tg);
+    SmartDashboard.putNumber("LTPitch", pitch);
+    SmartDashboard.putNumber("LTYaw", yaw);
 //    SmartDashboard.putNumber("LTArea",area);  
 
   }
