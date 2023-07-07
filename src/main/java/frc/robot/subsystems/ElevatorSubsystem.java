@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Joystick;
 
 public class ElevatorSubsystem extends SubsystemBase 
 {
@@ -21,34 +22,42 @@ public class ElevatorSubsystem extends SubsystemBase
   
   private boolean HoldPos;
   private double TargetPos;
-  private PIDController HoldPID = new PIDController(0.005, 0.001, 0);
+  private PIDController ElePID = new PIDController(0.005, 0, 0);
   
   private int currentLevel;
   private int newLevel;
 
   private double pos;
 
-  private double[] levelTicks = {0, 10000, 54000, 80000, 85500}; // 86000
+  // level ticks for 12:1 sport gearbox:
+  private double[] levelTicks = {0, 10000, 54000, 80000, 84250}; // 86000
+
+  // level ticks for 4:1 sport gearbox:
+//  private double[] levelTicks = {0, 3333 * 4, 18000 * 4, 26667 * 4, 28000 * 4}; // 16:1 installed; values are for 4:1
+//  private double[] levelTicks = {0, 13000, 70000, 104000, 112000}; // 86000
 
   private Timer et = new Timer();
 
   public ElevatorSubsystem() 
   {
-    m_ElevatorFalcon.setNeutralMode(NeutralMode.Coast);
+    m_ElevatorFalcon.setNeutralMode(NeutralMode.Brake); //(was Coast)
 
-    m_ElevatorFalcon.configForwardSoftLimitThreshold(levelTicks[4]);
+    m_ElevatorFalcon.configForwardSoftLimitThreshold(levelTicks[4] + 500);
     m_ElevatorFalcon.configForwardSoftLimitEnable(true);
+    
     m_ElevatorFalcon.configReverseSoftLimitThreshold(levelTicks[0]);
     m_ElevatorFalcon.configReverseSoftLimitEnable(true);
 
     SupplyCurrentLimitConfiguration falconlimit = new SupplyCurrentLimitConfiguration();
+    
     falconlimit.enable = true;
     falconlimit.currentLimit = 50;
     falconlimit.triggerThresholdCurrent = 50;
     falconlimit.triggerThresholdTime = 0;
+    m_ElevatorFalcon.configSupplyCurrentLimit(falconlimit);
 
     TargetPos = 0;
-    m_ElevatorFalcon.setSelectedSensorPosition(TargetPos,0,100);
+    m_ElevatorFalcon.setSelectedSensorPosition(TargetPos,0,200);
     getPosition();
     HoldPos = true;
   }
@@ -63,9 +72,9 @@ public class ElevatorSubsystem extends SubsystemBase
   {
     pos = m_ElevatorFalcon.getSelectedSensorPosition();
 
-    for(int i=3; i>0; i--)
+    for(int i=4; i>0; i--)
     {
-      if (pos >= levelTicks[i] - 1000)
+      if (pos >= levelTicks[i] - 1000) // was 1000 for 12:1 sport
       {
         return(i);
       }
@@ -108,7 +117,7 @@ public class ElevatorSubsystem extends SubsystemBase
 
   public boolean elevatorActive()
   {
-    if (pos >= 1000)
+    if (pos >= 5000)
     {
       return(true);
     }
@@ -124,22 +133,22 @@ public class ElevatorSubsystem extends SubsystemBase
   public void periodic() 
   {
     double maxTime = 3.0;     // maximum seconds to allow run
-    double minSpeed = 0.2;    // start speed
-    double maxSpeed = 1.0;      // plateau speed
+    double minSpeed = 0.2;    // start speed - was 0.2
+    double maxSpeed;
     double plateauStart;      // threshold tick count when ramp up is complete
     double plateauEnd;        // threshold tick count to begin ramp down
     double targetSpeed;
     double ticks;
 
-    SmartDashboard.putNumber("Elevator Position", pos);
-    SmartDashboard.putNumber("Elevator Level", getLevel());
+    SmartDashboard.putNumber("Elevator POS", pos);
+    SmartDashboard.putNumber("Elevator Level", currentLevel);
 
     if (HoldPos == true)
     {
       pos = getPosition();
 
-      double co = MathUtil.clamp(HoldPID.calculate(pos, TargetPos), -0.08, 0.08);
-      if(pos < 1000)
+      double co = MathUtil.clamp(ElePID.calculate(pos, TargetPos), -0.08, 0.08);
+      if(pos < 50)
       {
         co = 0;
       }
@@ -149,7 +158,6 @@ public class ElevatorSubsystem extends SubsystemBase
 
     // here if we're not holdoing position
 
-    HoldPID.reset();
     if (newLevel == currentLevel)
     {
       HoldPos = true;
@@ -166,11 +174,8 @@ public class ElevatorSubsystem extends SubsystemBase
     // going up?
     if (newLevel > currentLevel)
     {
+      maxSpeed = 1.0;
 
-      // compute trapezoid inflection points
-      plateauStart = levelTicks[currentLevel];
-      plateauEnd = levelTicks[newLevel];
-        
       // get current encoder position
       ticks = getPosition();
 
@@ -183,43 +188,37 @@ public class ElevatorSubsystem extends SubsystemBase
         return;
       }
 
-      // before plateau speed ramp up
-      if (ticks < plateauStart)
+      if (ticks / levelTicks[newLevel] < 0.8)
       {
-        targetSpeed = maxSpeed * (ticks - levelTicks[currentLevel]) / (plateauStart - levelTicks[currentLevel]);
+        maxSpeed = 1;
       }
-
-      // at plateau speed constant at max
-      else if (ticks < plateauEnd)
-      {
-        targetSpeed = maxSpeed;
-      }
-
-      // after plateau speed ramp down
       else
       {
-        targetSpeed = maxSpeed - maxSpeed * (ticks - plateauEnd) / (levelTicks[newLevel] - plateauEnd);
+        maxSpeed *= (1 - ticks / levelTicks[newLevel]);
       }
+      targetSpeed = MathUtil.clamp(ElePID.calculate(ticks, levelTicks[newLevel]), -maxSpeed, maxSpeed);
+
+//      targetSpeed *= (1 - ticks / levelTicks[newLevel]);
+
+//      if (ticks > levelTicks[newLevel] - 40000 && ticks < levelTicks[newLevel])
+//      {
+//        targetSpeed *= (1 - (ticks / levelTicks[newLevel]));
+//      }
 
       // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
-      if (targetSpeed < minSpeed)
+      if (targetSpeed < 0.3)
       {
-        targetSpeed = minSpeed;
+        targetSpeed = 0.3;
       }
 
       // send target speed to motor
       m_ElevatorFalcon.set(targetSpeed);
-
     }
 
     // going down?
     else
     {
-      maxSpeed *= 0.4;
-
-      // compute trapezoid inflection points
-      plateauStart = levelTicks[currentLevel];
-      plateauEnd = levelTicks[newLevel] + 6000;
+      maxSpeed = 0.5;
 
       // get current encoder position
       ticks = getPosition();
@@ -232,28 +231,10 @@ public class ElevatorSubsystem extends SubsystemBase
         return;
       }
 
-      // before plateau speed ramp up
-      if (ticks > plateauStart)
+      targetSpeed = MathUtil.clamp(ElePID.calculate(ticks, levelTicks[newLevel]), -maxSpeed, maxSpeed);
+      if (ticks < 20000)
       {
-        targetSpeed = -(maxSpeed * (ticks - levelTicks[currentLevel]) / (plateauStart - levelTicks[currentLevel]));
-      }
-
-      // at plateau speed constant at max
-      else if (ticks > plateauEnd)
-      {
-        targetSpeed = -maxSpeed;
-      }
-
-      // after plateau speed ramp down
-      else
-      {
-        targetSpeed = -(maxSpeed - maxSpeed * (ticks - plateauEnd) / (levelTicks[newLevel] - plateauEnd));
-      }
-
-      // ensure target speed is at least at minimum (does not go to zero and stop prematurely)
-      if (targetSpeed > -minSpeed)
-      {
-        targetSpeed = -minSpeed;
+        targetSpeed *= (ticks / 20000) + 0.1;
       }
 
       // send target speed to motor

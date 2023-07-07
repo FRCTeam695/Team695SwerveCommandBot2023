@@ -31,6 +31,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
   public DigitalInput robotDigitalInput = new DigitalInput(9);
 
   public double gyroYaw;
+  public double gyroPitch;
   public double gyroAngle;
 
   // Cancoders
@@ -1016,6 +1017,7 @@ public class SwerveDriveSubsystem extends SubsystemBase
   public void periodic() 
   {
     gyroYaw = gyro.getYaw();
+    gyroPitch = gyro.getPitch();
     gyroAngle = gyro.getAngle();
     SmartDashboard.putNumber("YAW", gyroYaw);
     SmartDashboard.putNumber("ROLL", gyro.getRoll());
@@ -1023,10 +1025,12 @@ public class SwerveDriveSubsystem extends SubsystemBase
     SmartDashboard.putNumber("PITCH", gyro.getPitch());
 
     for(int lp=0; lp<4; lp++)
-  {
+    {
       SmartDashboard.putNumber(lp +"-" + cancoderoffset[lp], cancoder[lp].getAbsolutePosition());
-  }
-    //System.out.println(steer[0].getSelectedSensorPosition());
+    }
+
+//    System.out.println(drive[0].getSelectedSensorPosition());
+  
   }
 
 }

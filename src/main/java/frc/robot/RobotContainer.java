@@ -4,22 +4,20 @@
 
 package frc.robot;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
-import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -50,12 +47,6 @@ public class RobotContainer
   private final JoystickButton m_Pilot_X = new JoystickButton(m_Pilot_Controller, 3);
   private final JoystickButton m_Pilot_LeftBumper = new JoystickButton(m_Pilot_Controller, 5);
   private final JoystickButton m_Pilot_RightBumper = new JoystickButton(m_Pilot_Controller, 6);
-// elevator  private final JoystickButton m_Pilot_BACK = new JoystickButton(m_Pilot_Controller, 7);
-// elevator  private final JoystickButton m_Pilot_START = new JoystickButton(m_Pilot_Controller, 8);
-  
-  // with pow3:
-  //private final DoubleSupplier m_Pilot_Left_XAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(0), 3));
-  //private final DoubleSupplier m_Pilot_Left_YAxis = () -> (Math.pow(m_Pilot_Controller.getRawAxis(1), 3));
 
   // without pow3:
   private final DoubleSupplier m_Pilot_Left_XAxis = () -> (m_Pilot_Controller.getRawAxis(0));
@@ -74,35 +65,10 @@ public class RobotContainer
   private final DoubleSupplier m_ConstantSpeedInverted = () -> (-0.4);
   private final DoubleSupplier m_NoSpeed = () -> (0);  
 
-  //F310_Copilot Variables
-  /*
-  private static Joystick m_Logitech_F310_Copilot = new Joystick(1);
-  private final JoystickButton m_F310_Copilot_A = new JoystickButton(m_Logitech_F310_Copilot, 1);
-  private final JoystickButton m_F310_Copilot_B = new JoystickButton(m_Logitech_F310_Copilot, 2);
-  private final JoystickButton m_F310_Copilot_X = new JoystickButton(m_Logitech_F310_Copilot, 3);
-  private final JoystickButton m_F310_Copilot_Y = new JoystickButton(m_Logitech_F310_Copilot, 4);
-  private final JoystickButton m_F310_Copilot_LeftBumper = new JoystickButton(m_Logitech_F310_Copilot, 5);
-  private final JoystickButton m_F310_Copilot_RightBumper = new JoystickButton(m_Logitech_F310_Copilot, 6);
-  private final JoystickButton m_F310_Copilot_BACK = new JoystickButton(m_Logitech_F310_Copilot, 7);
-  private final JoystickButton m_F310_Copilot_START = new JoystickButton(m_Logitech_F310_Copilot, 8);
-  private final DoubleSupplier m_F310_Copilot_Left_XAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(0));
-  private final DoubleSupplier m_F310_Copilot_Left_YAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(1));
-  private final DoubleSupplier m_F310_Copilot_Right_XAxis = () -> (m_Logitech_F310_Copilot.getRawAxis(4));
-  */
-
-  //Xbox Variables:
-  /*
-  private static Joystick m_Xbox = new Joystick(2);
-  private final JoystickButton m_Xbox_A = new JoystickButton(m_Xbox, 1);
-  private final JoystickButton m_Xbox_B = new JoystickButton(m_Xbox, 2);
-  private final DoubleSupplier m_Xbox_Left_XAxis = () -> (Math.pow(m_Xbox.getRawAxis(0), 3));
-  private final DoubleSupplier m_Xbox_Left_YAxis = () -> (Math.pow(m_Xbox.getRawAxis(1), 3));
-  private final DoubleSupplier m_Xbox_Right_XAxis = () -> (m_Xbox.getRawAxis(4));
-  */
-
   SendableChooser<Command> m_pathChooser = new SendableChooser<>();
   SendableChooser<Double> m_secChooser = new SendableChooser<>();
   SendableChooser<Command> m_chargeStationChooser = new SendableChooser<>();
+  SendableChooser<Double> m_sideChooser = new SendableChooser<>();
 
   //long scorePosition;
   
@@ -116,50 +82,22 @@ public class RobotContainer
   // Subsystems:
   private final ElevatorIntakeSubsystem m_ElevatorIntakeSubsystem = new ElevatorIntakeSubsystem();
   private final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
-  private final LEDSubsystem m_LEDSubsystem = new LEDSubsystem();
   private final SwerveDriveSubsystem m_swerveDrivetrain = new SwerveDriveSubsystem(m_ElevatorSubsystem);
-  
+  private final LEDSubsystem m_LEDSubsystem = new LEDSubsystem();
+
   // Commands:
-//  private final ExampleCommand m_autoCommand = new ExampleCommand(m_swerveDrivetrain);
   private final Command m_Pilot_swerveCommand = new SwerveDriveCommand(m_Pilot_Left_XAxis, m_Pilot_Left_YAxis, m_Pilot_Right_XAxis, m_swerveDrivetrain, m_ElevatorSubsystem);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  public Command scoreCones()
-  {
-    /*
-    scorePosition = NetworkTableInstance.getDefault().getTable("sidecar695").getEntry("currentGrid").getInteger(-1);
-    double travelTicks = (((double)scorePosition )* 26400) + 3000;
-    SmartDashboard.putNumber("TravelTicks", travelTicks);
-    */
-
-    return new InstantCommand(()-> {new WaitCommand(0.001);})
-    .andThen(new DriveStraightCommand(m_swerveDrivetrain, 5000, 0.08))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, 0.2, 0));    //10000
-    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
-    /*
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, 57500, 0.15, 0))    //84000
-    .andThen(new WaitCommand(1.5))
-    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, 8000, 0.08, 0))
-    .andThen(new WaitCommand(1.5));
-    */
-    //.andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 0.7).withTimeout(1.5));
-  }
-
-  /*
-  public Command strafeTest()
-  {
-    return new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome();}, m_swerveDrivetrain)
-    .andThen(new WaitCommand(1.5))
-    .andThen(new StrafeToTargetCommand(m_swerveDrivetrain, m_VisionSubsystem, 300000, -0.15, 0));
-  }
-  */
+  PIDController test_pid;
+  double netYaw;
+  double limelightDistanceTicks;
+  double idealYaw;
+  double pitchMultiplier = -5.2;
 
   public RobotContainer() 
   {
     // Configure the button bindings
     m_swerveDrivetrain.setDefaultCommand(m_Pilot_swerveCommand);
-    //m_ElevatorIntakeSubsystem.setDefaultCommand(new RunCommand(()-> {m_ElevatorIntakeSubsystem.setDirection(0);}, m_ElevatorIntakeSubsystem));
     configureButtonBindings();
 
     m_Pilot_A.onTrue(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.2);}, m_swerveDrivetrain));
@@ -175,33 +113,21 @@ public class RobotContainer
 
     m_Pilot_X.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem));
 
-    /*
-    m_F310_Copilot_BACK.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 0));
-    m_F310_Copilot_START.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 1));
-    m_F310_Copilot_LeftBumper.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 2));
-    m_F310_Copilot_RightBumper.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, 3));
-    m_F310_Copilot_Y.whileTrue(new RunElevatorCommand(m_ElevatorSubsystem, -1));
-    */
-
-   // m_F310_Copilot_X.whileTrue(new ManualElevatorCommand(m_ElevatorSubsystem, m_F310_Copilot_Left_YAxis));
-
-//    Command scoreCones = scoreCones();
-    //SmartDashboard.putData((Sendable) scoreCones);
-//    m_Pilot_BACK.whileTrue(scoreCones);
-
-//    m_Pilot_START.whileTrue(new AlignToAprilTagCommand(m_swerveDrivetrain, m_VisionSubsystem));
-
-    //m_F310_Y.whileTrue(strafeTest());
-
-    m_pathChooser.setDefaultOption("Substation Cube Path", substationCubePath());
-    m_pathChooser.addOption("Coopertition Cube Path", coopertitionCubePath());
-    m_pathChooser.addOption("Score Table Cube Path", scoreTableCubePath());
-    m_pathChooser.addOption("Substation Cone Path", substationConePath());
-    m_pathChooser.addOption("Score Table Cone Path", scoreTableConePath());
-    //m_pathChooser.addOption("Substation Cube PIROUETTE", substationCubePathPirouette());
-    m_pathChooser.addOption("Substation 2 Cone Auton", substation2ConeAuton());
-    m_pathChooser.addOption("Substation 1.5 Cone Auton", substationOneAndAHalfConeAuton());
+    m_pathChooser.setDefaultOption("Cone/MoveAlongSide/Cube/NoBalance", HoustonAuton());
+    m_pathChooser.addOption("Cone/MoveOverCharge/Balance", exitOverChargeStationAndBalance());
+    //m_pathChooser.addOption("Substation Cube Path", substationCubePath());
+    //m_pathChooser.addOption("Coopertition Cube Path", coopertitionCubePath());
+    //m_pathChooser.addOption("Score Table Cube Path", scoreTableCubePath());
+    m_pathChooser.addOption("Cone/MoveAlongSubstationSide/NoBalance", substationConePath());
+    m_pathChooser.addOption("Cone/MoveAlongScoreTable/NoBalance", scoreTableConePath());
+    //m_pathChooser.addOption("Substation 2 Cone Auton", substation2ConeAuton());
+    //m_pathChooser.addOption("Substation 1.5 Cone Auton", substationOneAndAHalfConeAuton());
+    m_pathChooser.addOption("Houston Wildcat", HoustonWildcat());
     SmartDashboard.putData("Auton Routine", m_pathChooser);
+
+    m_sideChooser.setDefaultOption("Side: Substation", 1.0);
+    m_sideChooser.addOption("Side: Score Table", -1.0);
+    SmartDashboard.putData("Side Chooser", m_sideChooser);
 
     m_secChooser.setDefaultOption("0", 0.0);
     m_secChooser.addOption("1", 1.0);
@@ -218,7 +144,6 @@ public class RobotContainer
     ntSidecar = NetworkTableInstance.getDefault().getTable("sidecar695");
     currentMode = ntSidecar.getDoubleTopic("currentIntakeMode").publish();
     
-    //CameraServer.startAutomaticCapture();
   }
 
   /**
@@ -262,17 +187,22 @@ public class RobotContainer
     return new WaitCommand(m_secChooser.getSelected())
     .andThen(scorePreload())
     .andThen(selectedPath)
-    .andThen(chargeStation);
+    //.andThen(chargeStation)
+    ;
   }
 
   public Command scorePreload()
   {
     return new InstantCommand(()-> {new WaitCommand(0.001);})
-      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.2);}, m_swerveDrivetrain))
       .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, -1).withTimeout(3))
+      .andThen(new InstantCommand(()->
+        {
+          currentMode.set(1); // cones
+          m_ElevatorIntakeSubsystem.setcurrentLevel(3);
+        }, m_swerveDrivetrain))
       .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
-      .andThen(new WaitCommand(0.5))
-      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(1));
+      .andThen(new InstantCommand(()-> {SwerveDriveSubsystem.CancoderHome(0.5);}, m_swerveDrivetrain))
+      .andThen(new RunElevatorIntakeCommand(m_ElevatorIntakeSubsystem, 1).withTimeout(0.5));
   }
 
   double initialRobotYaw;
@@ -1033,7 +963,8 @@ public class RobotContainer
 
   double initialRobotAngle;
   boolean hasStartedAscent = false;
-  double deltaAngle;
+  double deltaAngleArray;
+  double deltaAngleInstantaneous;
   double chargeStationState = 0;
   double averageAngle;
   double[] angleArray = new double[5];
@@ -1043,66 +974,1281 @@ public class RobotContainer
     return new InstantCommand(()-> {new WaitCommand(0.001);})
     .andThen
     (
-      new FunctionalCommand
+      new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        chargeStationState = 1;
+        initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
+
+        // PID Controller for final balance
+        auton_pid = new PIDController(0.0125, 0, 0);
+        auton_pid.reset();
+      },
+
+      // execute
+      ()-> 
+      {
+
+        // Create an average calculation of gyro angle (pitch)
+        for(int i = 3; i >= 0; i--)
+        {
+          angleArray[i+1] = angleArray[i];
+        }
+
+        angleArray[0] = m_swerveDrivetrain.gyro.getPitch();
+
+        double total = 0;
+
+        for(int i=0; i < angleArray.length; i++)
+        {
+          total = total + angleArray[i];
+        }
+
+        averageAngle = total / angleArray.length;  
+
+        SmartDashboard.putNumber("AverageAngle", averageAngle);
+        
+        deltaAngleArray = initialRobotAngle + averageAngle;
+
+        // Measure instantaneous pitch
+        deltaAngleInstantaneous = initialRobotAngle + m_swerveDrivetrain.gyro.getPitch();
+
+        // Move up the station quickly
+        if(chargeStationState == 1)
+        {
+          m_swerveDrivetrain.driveSwerve(0, 0.50, 0, true);
+
+          // Check for ascent
+          if(deltaAngleArray > 16)
+          {
+            hasStartedAscent = true;
+            chargeStationState = 2;
+          }
+        }
+
+        // Move up slowly after sensing ascent
+        if(chargeStationState == 2)
+        {
+          double Yj = MathUtil.clamp(auton_pid.calculate(deltaAngleInstantaneous, 0), -0.25, 0.25);
+          m_swerveDrivetrain.driveSwerve(0, -Yj, 0, true);
+        }
+
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        chargeStationState = 3;
+        hasStartedAscent = false;
+      },
+
+      // end condition
+      ()->  /*hasStartedAscent == true && deltaAngle <= 12*/ false,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    );
+  }
+
+  // Variables for exiting the community over the charge station
+  double chargeStationExitState = 0;
+
+  public Command exitOverChargeStationAndBalance()
+  {
+    return
+    (
+      new WaitCommand(0.001)
+    )
+
+    // Move elevator down
+    .andThen(new RunElevatorCommand(m_ElevatorSubsystem))
+
+    // Move out of the community over charge station
+    .andThen
+    (
+      new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        chargeStationExitState = 1;
+        initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
+        slew_rate = new SlewRateLimiter(0.5);
+      },
+
+      // execute
+      ()-> 
+      {
+
+        // Check instantaneous angle
+        deltaAngleInstantaneous = initialRobotAngle + m_swerveDrivetrain.gyro.getPitch();
+
+        // Move up station
+        if(chargeStationExitState == 1)
+        {
+          m_swerveDrivetrain.driveSwerve(0, -slew_rate.calculate(0.4), 0, true);
+          if(deltaAngleInstantaneous <= -15)
+          {
+            chargeStationExitState = 2;
+          }
+        }
+
+        // Move down station 
+        if(chargeStationExitState == 2)
+        {
+          m_swerveDrivetrain.driveSwerve(0, -slew_rate.calculate(0.4), 0, true);
+          if(deltaAngleInstantaneous >= 10)
+          {
+            chargeStationExitState = 3;
+          }
+        }
+
+        // Level off 
+        if(chargeStationExitState == 3)
+        {
+          m_swerveDrivetrain.driveSwerve(0, -slew_rate.calculate(0.4), 0, true);
+          if(deltaAngleInstantaneous <= 2)
+          {
+            chargeStationExitState = 4;
+          }
+        }
+
+        // Change state after passing pivot point
+        if(chargeStationExitState == 4)
+        {
+          m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        }
+
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+      },
+
+      // end condition
+      ()->  chargeStationExitState == 4,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // Move away from station slightly
+    .andThen(
+      new FunctionalCommand(
+        
+        // init
+        ()-> 
+        { 
+          tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        },
+  
+        // execute
+        ()-> 
+        {
+          m_swerveDrivetrain.driveSwerve(0, -0.10, 0, true);
+        },
+  
+        // end
+        interrupted-> 
+        {
+          m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        },
+  
+        // end condition
+        ()-> Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0)) >= 20000,
+  
+        // required subsystem
+        m_swerveDrivetrain)
+      )
+
+      // Move towards community and balance
+      .andThen
       (
-        ()->           
+        new FunctionalCommand(
+        
+        // init
+        ()-> 
         {
           chargeStationState = 1;
           initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
-//          SmartDashboard.putNumber("Charge Station State", chargeStationState);
+
+          // PID Controller for final balance
+          auton_pid = new PIDController(0.015, 0, 0);
+          auton_pid.reset();
         },
-        ()->
-        {          
-          for(int i = 3; i >= 0; i--)
-          {
-            angleArray[i+1] = angleArray[i];
-          }
+  
+        // execute
+        ()-> 
+        {
 
-          angleArray[0] = m_swerveDrivetrain.gyro.getPitch();
+          // Measure instantaneous pitch
+          deltaAngleInstantaneous = m_swerveDrivetrain.gyro.getPitch();
 
-          double total = 0;
-
-          for(int i=0; i < angleArray.length; i++)
-          {
-            total = total + angleArray[i];
-          }
-
-          averageAngle = total / angleArray.length;  
-          
-          SmartDashboard.putNumber("AverageAngle", averageAngle);
-
-          deltaAngle = Math.abs(initialRobotAngle - averageAngle);
-
+          // Move up the station quickly
           if(chargeStationState == 1)
           {
-            m_swerveDrivetrain.driveStraight(-0.50, initialRobotYaw, initialTicks);
-            if(deltaAngle > 16)
+            m_swerveDrivetrain.driveSwerve(0, 0.40, 0, true);
+
+            // Check for ascent
+            if(deltaAngleInstantaneous > 16)
             {
               hasStartedAscent = true;
               chargeStationState = 2;
             }
           }
 
+          // Move up slowly after sensing ascent
           if(chargeStationState == 2)
           {
-            m_swerveDrivetrain.driveStraight(-0.16, initialRobotYaw, initialTicks);
+            double Yj = MathUtil.clamp(auton_pid.calculate(deltaAngleInstantaneous, 0), -1, 1);
+            m_swerveDrivetrain.driveSwerve(0, -Yj, 0, true);
           }
-          
-          //SmartDashboard.putNumber("Charge Station State", chargeStationState);
+  
         },
+  
+        // end
         interrupted-> 
         {
-          for(int lp=0; lp<4; lp++)
-          {
-            m_swerveDrivetrain.steer[lp].set(ControlMode.PercentOutput, 0);
-            m_swerveDrivetrain.drive[lp].set(ControlMode.PercentOutput, 0);
-          }
+          m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
           chargeStationState = 3;
-          //SmartDashboard.putNumber("Charge Station State", chargeStationState);
           hasStartedAscent = false;
         },
-        ()-> hasStartedAscent == true && deltaAngle <= 12,
+  
+        // end condition
+        ()->  /*hasStartedAscent == true && deltaAngle <= 12*/ false,
+  
+        // required subsystem
         m_swerveDrivetrain)
-    );
+      );
   }
+
+
+  double tick_start;
+  double tick_delta;
+  double ticks_to_cube;                    // Calculated ticks to move towards cube
+  double inches_to_ticks = 781;            // Inches to ticks multiplier - Adjust multiplier as needed
+  SlewRateLimiter slew_rate;
+  SlewRateLimiter slew_rate_turn;
+  PIDController auton_pid;
+  PIDController auton_pid_second;
+  int apriltag_id = 7;
+  double apriltag_yaw;
+  double apriltag_pitch;
+  double apriltag_area;
+  boolean GotCube;
+  double angleToCube;
+  double autonStrafeSpeed;
+  double gridExitTicks;
+  double autonChargeStationAdjust;
+
+  public Command HoustonAuton()
+  {
+
+    return(
+    new WaitCommand(0.001)
+    )
+
+    // move from grid
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Begin HoustonAuton");
+        m_VisionSubsystem.pv_setPipeline(0);
+        m_ElevatorSubsystem.runToLevel(); // cleanup elevator down from scoring preloaded cone
+        System.out.println("Move from grid.");
+        tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        slew_rate = new SlewRateLimiter(0.5);
+        auton_pid = new PIDController(0.02, 0, 0);
+        auton_pid.reset();
+
+        // Substation Side
+        if(m_sideChooser.getSelected() == 1)
+        {
+          // Red Alliance
+          if(getAlliance() == 1)
+          {
+            apriltag_id = 3;
+            angleToCube = 135 - 10;
+            autonStrafeSpeed = -0.5;
+            gridExitTicks = 65000;
+            autonChargeStationAdjust = 1;
+          }
+
+          // Blue Alliance
+          else
+          {
+            apriltag_id = 6;
+            angleToCube = -135 + 10;
+            autonStrafeSpeed = 0.5;
+            gridExitTicks = 65000;    // TBD value
+            autonChargeStationAdjust = 1;
+          }
+        }
+
+        // Score table side
+        else
+        {
+          // Red Alliance
+          if(getAlliance() == 1)
+          {
+            apriltag_id = 1;
+            angleToCube = 170;
+            autonStrafeSpeed = 0.5;
+            gridExitTicks = 20000;
+            autonChargeStationAdjust = -1;
+          }
+
+          // Blue Alliance
+          else
+          {
+            apriltag_id = 8;
+            angleToCube = -170;
+            autonStrafeSpeed = -0.5;
+            gridExitTicks = 20000;    // TBD value
+            autonChargeStationAdjust = 1;
+          }
+        }
+
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroAngle, 0), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, -slew_rate.calculate(0.75), Zj, true);
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0)) >= gridExitTicks,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // continue moving and rotate towards cube
+    .andThen(
+    new FunctionalCommand(
+       
+      // init
+      ()-> 
+      { 
+        System.out.println("Move and rotate.");
+        auton_pid = new PIDController(0.02, 0, 0);
+        auton_pid.reset();
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroAngle, angleToCube), -0.5, 0.5);
+        m_swerveDrivetrain.driveSwerve(0, -0.6, Zj, true);
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+      },
+
+      // end condition
+      ()-> (angleToCube >= 0 && m_swerveDrivetrain.gyroAngle >= angleToCube) || (angleToCube < 0 && m_swerveDrivetrain.gyroAngle <= angleToCube),
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // set mode to cube and wait for camera to see it
+    .andThen(
+    new FunctionalCommand(
+          
+      // init
+      ()-> 
+      {
+        System.out.println("Look for cube.");
+      },
+
+      // execute
+      ()-> 
+      {
+      },
+
+      // end
+      interrupted-> 
+      {
+        currentMode.set(2);
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> (m_VisionSubsystem.pv_hasTarget() == true),
+
+      // required subsystem
+      m_swerveDrivetrain)
+
+    )
+
+    // adjust rotation and move to get cube right in front of intake
+    .andThen(
+    new FunctionalCommand(
+          
+      // init
+      ()-> 
+      { 
+        System.out.println("Align to cube.");
+        tick_start = tick_delta = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        auton_pid = new PIDController(0.015, 0, 0);
+        auton_pid.reset();
+        m_ElevatorIntakeSubsystem.runInit(-1);
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = -MathUtil.clamp(auton_pid.calculate(m_VisionSubsystem.pv_getYaw(), 0), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, -0.3, Zj, false);
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0,false);
+      },
+
+      // end condition
+      ()-> (m_VisionSubsystem.pv_getArea() >= 30
+        || m_VisionSubsystem.pv_hasTarget() == false),
+
+      // required subsystem
+      m_swerveDrivetrain)
+
+    )
+
+    // capture cube
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Capture cube.");
+        m_VisionSubsystem.pv_setPipeline(1);
+        tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0);
+        gotCube = false;
+      },
+
+      // execute
+      ()-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, -0.3, 0, false);
+        gotCube = m_ElevatorIntakeSubsystem.getStallHold();
+        tick_delta = Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, false);
+      },
+
+      // end condition
+      ()-> tick_delta >= 40000
+        || gotCube == true,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // back away and rotate with cube
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Back away and rotate with cube.");
+        auton_pid = new PIDController(0.02, 0, 0);
+        auton_pid.reset();
+        tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroAngle, 0), -0.8, 0.8);
+        m_swerveDrivetrain.driveSwerve(0.1 * autonChargeStationAdjust, 0.3, Zj, true);
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> ((angleToCube >= 0 && m_swerveDrivetrain.gyroAngle <= 10) || (angleToCube < 0 && m_swerveDrivetrain.gyroAngle >= -10)),
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // look for apriltag
+    .andThen(
+    new FunctionalCommand(
+          
+      // init
+      ()-> 
+      {
+        System.out.println("Look for apriltag.");
+        m_ElevatorIntakeSubsystem.setcurrentLevel(1);
+        m_ElevatorSubsystem.runToLevel();
+      },
+
+      // execute
+      ()-> 
+      {
+        System.out.println("Done.");
+      },
+
+      // end
+      interrupted-> 
+      {
+      },
+
+      // end condition
+      ()-> (m_VisionSubsystem.at_hasTarget(apriltag_id) == true),
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // start move to grid
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Start move to grid.");
+        tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        slew_rate = new SlewRateLimiter(0.5);
+        auton_pid = new PIDController(0.02, 0, 0);
+        auton_pid.reset();
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroAngle, 0), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, slew_rate.calculate(0.75), Zj, true);
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0)) >= 90000,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // continue move to grid with apriltag vector
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        System.out.println("Apriltag to grid.");
+        tick_delta = -1; 
+      },
+
+      // execute
+      ()-> 
+      {
+
+        if (tick_delta == -1)
+        {
+
+          if (m_VisionSubsystem.at_hasTarget(apriltag_id) == false)
+          {
+            m_swerveDrivetrain.driveSwerve(0, 0, 0, false);
+            return;
+          }
+
+          apriltag_yaw = m_VisionSubsystem.at_getYaw(apriltag_id) + m_swerveDrivetrain.gyroYaw;
+          if (autonChargeStationAdjust == 1)
+          {
+            apriltag_yaw -= 2;
+          }
+          else
+          {
+            apriltag_yaw -= 3;
+          }
+          System.out.printf("YAW: %f\n", m_swerveDrivetrain.gyroYaw);
+
+          apriltag_area = m_VisionSubsystem.at_getArea(apriltag_id);
+          System.out.printf("AREA: %f\n", apriltag_area);
+          
+          tick_delta = 0.96 * (-62 * apriltag_area + 103) * 1000; // apriltag area:distance equation (encoder ticks)
+          System.out.printf("TICKS: %f\n", tick_delta);
+          
+          tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+
+          auton_pid = new PIDController(0.02, 0, 0.0);
+          auton_pid.reset();
+
+          m_ElevatorSubsystem.runToLevel();  // elevator down
+
+          return;
+
+        }
+
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroYaw, apriltag_yaw), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, -0.45, Zj, false);
+
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> tick_delta != -1
+        && Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0)) >= tick_delta,
+
+      // required subsystem
+      m_swerveDrivetrain)
+
+    )
+
+    // adjust elevator and dump cube
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        m_ElevatorIntakeSubsystem.setcurrentLevel(2);
+        m_ElevatorSubsystem.runToLevel();
+      },
+
+      // execute
+      ()-> 
+      {
+
+        /*
+        // if elevator currently moving, just wait
+        if (m_ElevatorSubsystem.getHold() == false)
+        {
+          return;
+        }
+
+        if (m_ElevatorSubsystem.getLevel() == 0)
+        {
+          m_ElevatorIntakeSubsystem.setcurrentLevel(2);
+          m_ElevatorSubsystem.runToLevel();
+        }
+        */
+
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_ElevatorIntakeSubsystem.runInit(1);
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> m_ElevatorSubsystem.getLevel() == 2,
+
+      // required subsystem
+      m_swerveDrivetrain)
+
+    )
+
+    // elevator down and strafe to charge station
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Down and strafe.");
+        m_ElevatorSubsystem.runToLevel(); // elevator down
+        tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+      },
+
+      // execute
+      ()-> 
+      {
+        //m_swerveDrivetrain.driveSwerve(autonStrafeSpeed, -0.1, 0, true);
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        m_ElevatorIntakeSubsystem.stop();
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0)) >= 60000,
+
+      // required subsystem
+      m_swerveDrivetrain).withTimeout(3)
+
+    )
+/* 
+    // engage charge station
+    .andThen
+    (
+      new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        chargeStationState = 1;
+        initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
+
+        // PID Controller for final balance
+        auton_pid = new PIDController(0.015, 0, 0);
+        auton_pid.reset();
+
+        auton_pid_second = new PIDController(0.05, 0, 0);
+        auton_pid_second.reset();        
+      },
+
+      // execute
+      ()-> 
+      {
+
+        // Measure instantaneous pitch
+        deltaAngleInstantaneous = m_swerveDrivetrain.gyro.getPitch();
+
+        // Move up the station quickly
+        if(chargeStationState == 1)
+        {
+          double Zj = MathUtil.clamp(auton_pid_second.calculate(m_swerveDrivetrain.gyroYaw, 0), -1, 1);
+          m_swerveDrivetrain.driveSwerve(0, -0.5, Zj, true);
+
+          // Check for ascent
+          if(deltaAngleInstantaneous < -16)
+          {
+            hasStartedAscent = true;
+            chargeStationState = 2;
+          }
+        }
+
+        // Move up slowly after sensing ascent
+        if(chargeStationState == 2)
+        {
+          double Yj = MathUtil.clamp(auton_pid.calculate(deltaAngleInstantaneous, 0), -1, 1);
+          m_swerveDrivetrain.driveSwerve(0, -Yj, 0, true);
+        }
+
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        chargeStationState = 3;
+        hasStartedAscent = false;
+      },
+
+      // end condition
+      ()->  false,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+*/
+    ;
+  }
+
+
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+// *****************************************************************************************************************
+
+
+
+  public Command HoustonWildcat()
+  {
+
+    return(
+    new WaitCommand(0.001)
+    )
+
+    // move from grid
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Begin HoustonWildcat");
+        m_VisionSubsystem.pv_setPipeline(0);
+        m_ElevatorSubsystem.runToLevel(); // cleanup elevator down from scoring preloaded cone
+        slew_rate = new SlewRateLimiter(0.6);
+        auton_pid = new PIDController(0.02, 0, 0);
+        auton_pid.reset();
+        tick_delta = 0;
+
+        // Red Alliance
+        if(getAlliance() == 1)
+        {
+          apriltag_id = 2;
+        }
+
+        // Blue Alliance
+        else
+        {
+          apriltag_id = 7;
+        }
+
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroAngle, -170), -.25, .25);
+        m_swerveDrivetrain.driveSwerve(0, -slew_rate.calculate(0.4), Zj, true);
+        tick_start = Math.abs(m_swerveDrivetrain.gyro.getPitch()) + Math.abs(m_swerveDrivetrain.gyro.getRoll());
+        System.out.printf("%f %f\n", tick_delta, tick_start);
+        if (tick_delta == 0)
+        {
+          if (tick_start >= 14.0)
+          {
+            tick_delta++;
+          }
+        }
+        else if (tick_delta == 1)
+        {
+          if (tick_start <= 10.0)
+          {
+            tick_delta++;
+          }
+        }
+        else if (tick_delta == 2)
+        {
+          if (tick_start >= 14.0)
+          {
+            tick_delta++;
+          }
+        }
+        else if (tick_delta == 3)
+        {
+          if (tick_start < 10.0)
+          {
+            tick_delta++;
+          }
+        }
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+      },
+
+      // end condition
+      ()-> m_swerveDrivetrain.gyroAngle <= -170 && tick_delta == 4,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // look for cube
+    .andThen(
+    new FunctionalCommand(
+          
+      // init
+      ()-> 
+      {
+        System.out.println("Look for cube.");
+      },
+
+      // execute
+      ()-> 
+      {
+      },
+
+      // end
+      interrupted-> 
+      {
+        currentMode.set(2);
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> (m_VisionSubsystem.pv_hasTarget() == true),
+
+      // required subsystem
+      m_swerveDrivetrain)
+
+    )
+
+    // adjust rotation and move to get cube right in front of intake
+    .andThen(
+    new FunctionalCommand(
+          
+      // init
+      ()-> 
+      { 
+        System.out.println("Align to cube.");
+        tick_start = tick_delta = m_swerveDrivetrain.drive[0].getSelectedSensorPosition();
+        auton_pid = new PIDController(0.015, 0, 0);
+        auton_pid.reset();
+        m_ElevatorIntakeSubsystem.runInit(-1);
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = -MathUtil.clamp(auton_pid.calculate(m_VisionSubsystem.pv_getYaw(), 0), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, -0.3, Zj, false);
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0,false);
+      },
+
+      // end condition
+      ()-> (m_VisionSubsystem.pv_getArea() >= 30
+        || m_VisionSubsystem.pv_hasTarget() == false),
+
+      // required subsystem
+      m_swerveDrivetrain)
+
+    )
+
+    // capture cube
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Capture cube.");
+        m_VisionSubsystem.pv_setPipeline(1);
+        tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0);
+        gotCube = false;
+      },
+
+      // execute
+      ()-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, -0.3, 0, false);
+        gotCube = m_ElevatorIntakeSubsystem.getStallHold();
+        tick_delta = Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0));
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, false);
+      },
+
+      // end condition
+      ()-> tick_delta >= 30000
+        || gotCube == true,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // move to grid
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        slew_rate = new SlewRateLimiter(1); // JPK was 0.5
+        auton_pid = new PIDController(0.02, 0, 0);
+        auton_pid.reset();
+        apriltag_area = -1;
+      },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroAngle, 0), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, slew_rate.calculate(0.5), Zj, true);
+        if (m_VisionSubsystem.at_hasTarget(apriltag_id) == true)
+        {
+          tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0);
+          apriltag_yaw = m_VisionSubsystem.at_getYaw(apriltag_id);
+          apriltag_area = m_VisionSubsystem.at_getArea(apriltag_id);      
+          System.out.printf("Found AT yaw=%f area=%f.", apriltag_yaw, apriltag_area);
+        }
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+      },
+
+      // end condition
+      ()-> m_swerveDrivetrain.gyro.getPitch() < -5.0,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    // look for apriltag
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        System.out.println("Look for Apriltag.");
+        m_ElevatorIntakeSubsystem.setcurrentLevel(1);
+        m_ElevatorSubsystem.runToLevel();
+      },
+
+      // execute
+      ()-> 
+      {
+
+        if (m_VisionSubsystem.at_hasTarget(apriltag_id) == true && apriltag_area == -1)
+        {
+          tick_start = m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0);
+          apriltag_yaw = m_VisionSubsystem.at_getYaw(apriltag_id);
+          apriltag_area = m_VisionSubsystem.at_getArea(apriltag_id);      
+          System.out.printf("Found AT yaw=%f area=%f.", apriltag_yaw, apriltag_area);
+        }
+
+      },
+
+      // end
+      interrupted-> 
+      {
+      },
+
+      // end condition
+      ()-> apriltag_area != -1,
+
+      // required subsystem
+      m_swerveDrivetrain).withTimeout(1)
+    )
+
+    // continue move to grid with apriltag vector
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        System.out.println("Apriltag to grid.");
+        apriltag_yaw = m_VisionSubsystem.at_getYaw(apriltag_id) + m_swerveDrivetrain.gyroYaw - 5;
+        tick_delta = (0.94 * (-62 * apriltag_area + 103) * 1000) - 12500; // apriltag area:distance equation (encoder ticks)         
+        auton_pid = new PIDController(0.02, 0, 0.0);
+        auton_pid.reset();
+    },
+
+      // execute
+      ()-> 
+      {
+        double Zj = MathUtil.clamp(auton_pid.calculate(m_swerveDrivetrain.gyroYaw, apriltag_yaw), -1, 1);
+        m_swerveDrivetrain.driveSwerve(0, -0.3, Zj, false);
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        //m_ElevatorIntakeSubsystem.setcurrentLevel(0);
+        //m_ElevatorSubsystem.runToLevel();
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> Math.abs(tick_start - m_swerveDrivetrain.drive[0].getSelectedSensorPosition(0)) >= tick_delta,
+
+      // required subsystem
+      m_swerveDrivetrain).unless(() -> apriltag_area == -1)
+
+    )
+/*
+    // elevator to 2
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        System.out.println("Elevator to 2.");
+      },
+
+      // execute
+      ()-> 
+      {
+        if (m_ElevatorSubsystem.getLevel() == 0)
+        {
+          m_ElevatorIntakeSubsystem.setcurrentLevel(2);
+          m_ElevatorSubsystem.runToLevel();  
+        }
+      },
+
+      // end
+      interrupted-> 
+      {
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> m_ElevatorSubsystem.getLevel() == 2,
+
+      // required subsystem
+      m_swerveDrivetrain).unless(() -> apriltag_area == -1)
+
+    )
+*/
+    // dump cube
+    .andThen(
+    new FunctionalCommand(
+      
+      // init
+      ()-> 
+      { 
+        m_ElevatorIntakeSubsystem.runInit(1);
+        m_ElevatorIntakeSubsystem.setcurrentLevel(0);
+        m_ElevatorSubsystem.runToLevel();
+      },
+
+      // execute
+      ()-> 
+      {
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_ElevatorIntakeSubsystem.stop();
+        System.out.println("Done.");
+      },
+
+      // end condition
+      ()-> false,
+
+      // required subsystem
+      m_swerveDrivetrain).withTimeout(0.25).unless(() -> apriltag_area == -1)
+
+    )
+
+    // engage charge station
+    .andThen
+    (
+      new FunctionalCommand(
+      
+      // init
+      ()-> 
+      {
+        System.out.println("Engage charge station.");
+        chargeStationState = 1;
+        initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
+
+        // PID Controller for final balance
+        auton_pid = new PIDController(0.01, 0, 0);
+        auton_pid.reset();
+
+        auton_pid_second = new PIDController(0.05, 0, 0);
+        auton_pid_second.reset();        
+      },
+
+      // execute
+      ()-> 
+      {
+
+        // Measure instantaneous pitch
+        deltaAngleInstantaneous = m_swerveDrivetrain.gyro.getPitch();
+
+        // Move up the station quickly
+        if(chargeStationState == 1)
+        {
+          double Zj = MathUtil.clamp(auton_pid_second.calculate(m_swerveDrivetrain.gyroYaw, 0), -1, 1);
+          m_swerveDrivetrain.driveSwerve(0, -0.5, Zj, true);
+
+          // Check for ascent
+          if(deltaAngleInstantaneous < -16)
+          {
+            hasStartedAscent = true;
+            chargeStationState = 2;
+          }
+        }
+
+        // Move up slowly after sensing ascent
+        if(chargeStationState == 2)
+        {
+          double Yj = MathUtil.clamp(auton_pid.calculate(deltaAngleInstantaneous, 0), -1, 1);
+          m_swerveDrivetrain.driveSwerve(0, -Yj, 0, true);
+        }
+
+      },
+
+      // end
+      interrupted-> 
+      {
+        m_swerveDrivetrain.driveSwerve(0, 0, 0, true);
+        chargeStationState = 3;
+        hasStartedAscent = false;
+      },
+
+      // end condition
+      ()->  false,
+
+      // required subsystem
+      m_swerveDrivetrain)
+    )
+
+    ;
+  }
+
+
+
+
 }

@@ -30,6 +30,7 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
   private NetworkTable ntSidecar;
   private IntegerPublisher stalled;
   private IntegerPublisher currentLevel;
+  //private IntegerPublisher requestLevel;
   
   public ElevatorIntakeSubsystem() 
   {
@@ -41,7 +42,9 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     ntSidecar = NetworkTableInstance.getDefault().getTable("sidecar695");
     stalled = ntSidecar.getIntegerTopic("stalled").publish();
     currentLevel = ntSidecar.getIntegerTopic("currentLevel").publish();
+    //requestLevel = ntSidecar.getIntegerTopic("requestLevel").publish();
     stalled.set(0);
+    currentLevel.set(0);
   }
 
   // direction:  -1=in, 1=out
@@ -141,6 +144,18 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
     return stallhold;
   }
 
+  public void setcurrentLevel(int level)
+  {
+    currentLevel.set(level);
+  }
+
+  /*
+  public void setrequestLevel(int level)
+  {
+    requestLevel.set(level);
+  }
+  */
+
   @Override
   public void periodic() 
   {
@@ -171,18 +186,28 @@ public class ElevatorIntakeSubsystem extends SubsystemBase
       }
     }
 
-    // if we are stalled, set next elevator level from user input
+    // triggers led green
     if (stallhold == true)
     {
       stalled.set(1);
+    }
+
+      if(DriverStation.isAutonomous())
+    {
+      return;
+    }
+
+    // if we are stalled, set next elevator level from user input
+    if (stallhold == true)
+    {
       currentLevel.set(ntSidecar.getEntry("requestLevel").getInteger(-1));
     }
 
     // otherwise, no stall, so set next elevator level to station
     else
     {
-      stalled.set(0);
-      currentLevel.set(3);
+        stalled.set(0);
+        currentLevel.set(3);
     }
 
   }

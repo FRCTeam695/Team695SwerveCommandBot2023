@@ -4,9 +4,12 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import org.photonvision.PhotonCamera;
 //import org.photonvision.targeting.PhotonPipelineResult;
 //import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -17,12 +20,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class VisionSubsystem extends SubsystemBase {
 
   PhotonCamera pv_camera = new PhotonCamera("OV5647");
-  PhotonCamera life_camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
+  //PhotonCamera life_camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
 
   boolean hasTargets;
   double pitch;
   double yaw;
   double area;
+
+  double at_last_pitch = 0;
+  double at_last_yaw = 0;
+  double at_last_area = 0;
 
   double [] avg_pitch = {0, 0, 0, 0, 0};
   double [] avg_yaw = {0, 0, 0, 0, 0};
@@ -32,6 +39,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   public VisionSubsystem() 
   {
+    pv_setPipeline(0);
   }
 
   /*public void getBestTarget()
@@ -73,6 +81,11 @@ public class VisionSubsystem extends SubsystemBase {
   }
 
   // Methods for the game piece camera
+
+  public void pv_setPipeline(int index)
+  {
+    pv_camera.setPipelineIndex(index);
+  }
 
   public boolean pv_hasTarget()
   {
@@ -125,59 +138,78 @@ public class VisionSubsystem extends SubsystemBase {
     return(ret);
   }
 
-  // Methods for the lifecam
+  // Methods for the apriltags cam
 
-  public boolean lifecam_hasTarget()
+  public boolean at_hasTarget(int apriltag_id)
   {
-    var result = life_camera.getLatestResult();
-    return(result.hasTargets());
-  }
-
-  public double lifecam_getYaw()
-  {
-    var result = life_camera.getLatestResult();
-    double ret = 0;
+    var result = pv_camera.getLatestResult();
     if (result.hasTargets() == true)
     {
-      ret = result.getBestTarget().getYaw();
+      List<PhotonTrackedTarget> targets = result.getTargets();
+      for (int lp=0; lp<targets.size(); lp++)
+      {
+        if (targets.get(lp).getFiducialId() == apriltag_id)
+          {
+            return(true);
+          }
+      }
     }
-    else
-    {
-      ret = 0;
-    }
-    return(ret);
+    return(false);
   }
-
-  public double lifecam_getPitch()
+  
+  public double at_getYaw(int apriltag_id)
   {
-    var result = life_camera.getLatestResult();
-    double ret = 0;
+    var result = pv_camera.getLatestResult();
     if (result.hasTargets() == true)
     {
-      ret = result.getBestTarget().getPitch();
+      List<PhotonTrackedTarget> targets = result.getTargets();
+      for (int lp=0; lp<targets.size(); lp++)
+      {
+        if (targets.get(lp).getFiducialId() == apriltag_id)
+          {
+            at_last_yaw = targets.get(lp).getYaw();
+            return(at_last_yaw);
+          }
+      }
     }
-    else
-    {
-      ret = 0;
-    }
-    return(ret);
+    return(at_last_yaw);
   }
 
-  public double lifecam_getArea()
+  public double at_getPitch(int apriltag_id)
   {
-    var result = life_camera.getLatestResult();
-    double ret = 0;
+    var result = pv_camera.getLatestResult();
     if (result.hasTargets() == true)
     {
-      ret = result.getBestTarget().getArea();
+      List<PhotonTrackedTarget> targets = result.getTargets();
+      for (int lp=0; lp<targets.size(); lp++)
+      {
+        if (targets.get(lp).getFiducialId() == apriltag_id)
+          {
+            at_last_pitch = targets.get(lp).getPitch();
+            return(at_last_pitch);
+          }
+      }
     }
-    else
-    {
-      ret = 0;
-    }
-    return(ret);
+    return(at_last_pitch);
   }
 
+  public double at_getArea(int apriltag_id)
+  {
+    var result = pv_camera.getLatestResult();
+    if (result.hasTargets() == true)
+    {
+      List<PhotonTrackedTarget> targets = result.getTargets();
+      for (int lp=0; lp<targets.size(); lp++)
+      {
+        if (targets.get(lp).getFiducialId() == apriltag_id)
+          {
+            at_last_area = targets.get(lp).getArea();
+            return(at_last_area);
+          }
+      }
+    }
+    return(at_last_area);
+  }
 
   public double getPitch()
   {
@@ -197,6 +229,9 @@ public class VisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() 
   {
+    SmartDashboard.putNumber("Photon Vision Latency", pv_camera.getLatestResult().getLatencyMillis());
+    //System.out.println(pv_camera.getLatestResult().getLatencyMillis());
+
     int lp;
     double tmp;
 
@@ -247,8 +282,8 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
 //    SmartDashboard.putBoolean("LT", tg);
-    SmartDashboard.putNumber("LTPitch", pitch);
-    SmartDashboard.putNumber("LTYaw", yaw);
+//    SmartDashboard.putNumber("LTPitch", pitch);
+//    SmartDashboard.putNumber("LTYaw", yaw);
 //    SmartDashboard.putNumber("LTArea",area);  
 
   }
