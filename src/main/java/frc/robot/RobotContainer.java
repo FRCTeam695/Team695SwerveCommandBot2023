@@ -1178,7 +1178,7 @@ public class RobotContainer
           initialRobotAngle =  m_swerveDrivetrain.gyro.getPitch();
 
           // PID Controller for final balance
-          auton_pid = new PIDController(0.015, 0, 0);
+          auton_pid = new PIDController(0.01, 0, 0);
           auton_pid.reset();
         },
   
